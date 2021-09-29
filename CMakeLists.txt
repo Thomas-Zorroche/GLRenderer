@@ -27,7 +27,11 @@ set(CXX_STANDARD 17)
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build (Debug or Release)" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+
+# Output path for .dll
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_SOURCE_DIR}/install)
+# Output path for .lib (import library)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  ${CMAKE_SOURCE_DIR}/install)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -89,11 +93,8 @@ include_directories(
 file(GLOB_RECURSE MY_SOURCES ${CMAKE_SOURCE_DIR}/src/*)
 file(GLOB_RECURSE MY_SHADERS ${CMAKE_SOURCE_DIR}/res/*)
 
-# Create target executable
-add_executable(${PROJECT_NAME}
-  ${MY_SOURCES}
-  ${MY_SHADERS} # we include them here only so that they will appear in the solution explorer of Visual Studio
-)
+# Create target library
+add_library(${PROJECT_NAME} SHARED ${MY_SOURCES} ${MY_SHADERS})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${CXX_STANDARD})
 
