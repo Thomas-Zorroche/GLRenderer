@@ -1,6 +1,7 @@
 ﻿#include "Renderer.hpp"
 
 #include <glad/glad.h>
+#include <iostream>
 
 namespace glrenderer
 {
@@ -27,8 +28,12 @@ namespace glrenderer
 		_viewProjectionMatrix = glm::mat4(1.0f);
 	}
 
-	void Renderer::submit(const std::shared_ptr<Shader>& shader, const glm::mat4& transform)
+	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform)
 	{
+		//shader->Bind();
+
+		vertexArray->bind();
+		drawIndexed(vertexArray);
 
 	}
 
@@ -50,9 +55,11 @@ namespace glrenderer
 
 	// Private Function
 
-	void Renderer::drawIndexed(uint32_t indexCount)
+	void Renderer::drawIndexed(const std::shared_ptr<VertexArray>& vertexArray)
 	{
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+		uint32_t count = vertexArray->getIndexBuffer() ? vertexArray->getIndexBuffer()->getCount() : 0;
+
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); // it works with indexCount = 0 ...
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 

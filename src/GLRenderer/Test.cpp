@@ -10,7 +10,7 @@ namespace test
 
 std::string function12()
 {
-	return "GLRenderer initialize STATIC";
+	return "GLRenderer initialize STATIC 66";
 }
 
 }

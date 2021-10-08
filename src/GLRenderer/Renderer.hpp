@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Shader.h"
+#include "VertexArray.hpp"
 
 namespace glrenderer {
 
@@ -16,7 +17,7 @@ namespace glrenderer {
 
 		static void updateCamera();
 
-		static void submit(const std::shared_ptr<Shader>& shader, const glm::mat4& transform = glm::mat4(1.0f));
+		static void draw(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
 		
 		static void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
@@ -25,7 +26,7 @@ namespace glrenderer {
 		static void clear();
 
 	private:
-		static void drawIndexed(uint32_t indexCount);
+		static void drawIndexed(const std::shared_ptr<VertexArray>& vertexArray);
 
 	private:
 		static glm::mat4 _viewProjectionMatrix;

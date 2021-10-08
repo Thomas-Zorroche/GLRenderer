@@ -1,18 +1,41 @@
 #include "Shader.h"
 
+#include <glad/glad.h>
 #include <iostream>
+
 #include <fstream>
-#include <string>
 #include <sstream>
 
 namespace glrenderer
 {
 
-    Shader::Shader(const std::string& filepath)
-        : m_FilePath(filepath), m_RendererID(0)
+    Shader::Shader(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+        : m_RendererID(0)
     {
-        ShaderProgramSource source = ParseShader(filepath);
-        m_RendererID = CreateShader(source.VertexSource, source.FramgentSource);
+        std::string vertexCode;
+        std::string fragmentCode;
+        try
+        {
+            // open file
+            std::ifstream vertexShaderFile(vertexShaderPath);
+            std::ifstream fragmentShaderFile(fragmentShaderPath);
+            std::stringstream vShaderStream, fShaderStream;
+            // read file's buffer contents into streams
+            vShaderStream << vertexShaderFile.rdbuf();
+            fShaderStream << fragmentShaderFile.rdbuf();
+            // close file handlers
+            vertexShaderFile.close();
+            fragmentShaderFile.close();
+            // convert stream into string
+            vertexCode = vShaderStream.str();
+            fragmentCode = fShaderStream.str();
+        }
+        catch (std::exception&)
+        {
+            std::cout << "ERROR::SHADER: Failed to read shader files" << std::endl;
+        }
+
+        m_RendererID = CreateShader(vertexCode, fragmentCode);
     }
 
     Shader::~Shader()
@@ -20,41 +43,6 @@ namespace glrenderer
         glDeleteProgram(m_RendererID);
     }
 
-
-    ShaderProgramSource Shader::ParseShader(const std::string& filepath)
-    {
-        std::ifstream stream(filepath);
-
-        enum class ShaderType
-        {
-            NONE = -1, VERTEX = 0, FRAGMENT = 1
-        };
-
-        std::string line;
-        std::stringstream ss[2];
-        ShaderType type = ShaderType::NONE;
-
-        while (getline(stream, line))
-        {
-            if (line.find("#shader") != std::string::npos)
-            {
-                if (line.find("vertex") != std::string::npos)
-                {
-                    type = ShaderType::VERTEX;
-                }
-                else if (line.find("fragment") != std::string::npos)
-                {
-                    type = ShaderType::FRAGMENT;
-                }
-            }
-            else
-            {
-                ss[(int)type] << line << "\n";
-            }
-        }
-
-        return { ss[0].str(), ss[1].str() };
-    }
 
     unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
     {
@@ -101,6 +89,7 @@ namespace glrenderer
     void Shader::Bind() const
     {
         glUseProgram(m_RendererID);
+
     }
 
     void Shader::Unbind() const
@@ -118,9 +107,35 @@ namespace glrenderer
         glUniform1f(GetUniformLocation(name), value);
     }
 
+    void Shader::SetUniform2f(const std::string& name, float f1, float f2)
+    {
+        glUniform2f(GetUniformLocation(name), f1, f2);
+    }
+
+    void Shader::SetUniform3f(const std::string& name, float f1, float f2, float f3)
+    {
+        glUniform3f(GetUniformLocation(name), f1, f2, f3);
+    }
+
+    void Shader::SetUniform3f(const std::string& name, const glm::vec3& values)
+    {
+        glUniform3f(GetUniformLocation(name), values.x, values.y, values.z);
+    }
+
     void Shader::SetUniform4f(const std::string& name, float f1, float f2, float f3, float f4)
     {
         glUniform4f(GetUniformLocation(name), f1, f2, f3, f4);
+    }
+
+    void Shader::SetUniform4f(const std::string& name, const glm::vec4& values)
+    {
+        glUniform4f(GetUniformLocation(name), values.x, values.y, values.z, values.w);
+    }
+
+
+    void Shader::SetUniformMatrix4fv(const std::string& name, glm::mat4 matrix)
+    {
+        glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
     }
 
     int Shader::GetUniformLocation(const std::string& name)
@@ -130,7 +145,7 @@ namespace glrenderer
 
         int location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
-            std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+            std::cerr << "uniform {} doesn't exist!" << name << std::endl;
 
         m_UniformLocationCache[name] = location;
         return location;
@@ -138,3 +153,4 @@ namespace glrenderer
     }
 
 }
+
