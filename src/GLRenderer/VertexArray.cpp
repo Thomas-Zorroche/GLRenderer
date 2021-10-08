@@ -1,6 +1,7 @@
 ﻿#include "VertexArray.hpp"
 
 #include <glad/glad.h>
+#include <iostream>
 
 namespace glrenderer {
 
@@ -12,6 +13,7 @@ namespace glrenderer {
 	VertexArray::~VertexArray()
 	{
 		glDeleteVertexArrays(1, &_id);
+		std::cout << "VAO deleted" << std::endl;
 	}
 
 	void VertexArray::bind()

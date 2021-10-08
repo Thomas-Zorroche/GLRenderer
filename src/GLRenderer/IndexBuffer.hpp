@@ -1,13 +1,14 @@
 ﻿#pragma once
 
 #include <stdint.h>
+#include <vector>
 
 namespace glrenderer {
 
 	class IndexBuffer
 	{
 	public:
-		IndexBuffer(uint32_t* indices, uint32_t count);
+		IndexBuffer(const std::vector<uint32_t>& indices , uint32_t count);
 		~IndexBuffer();
 
 		void bind();

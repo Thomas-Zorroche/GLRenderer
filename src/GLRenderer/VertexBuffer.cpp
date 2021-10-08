@@ -1,20 +1,22 @@
 ﻿#include "VertexBuffer.hpp"
 
 #include <glad/glad.h>
+#include <iostream>
 
 namespace glrenderer {
 
-	VertexBuffer::VertexBuffer(float* vertices, uint32_t size)
+	VertexBuffer::VertexBuffer(const std::vector<float>& vertices)
 	{
 		glCreateBuffers(1, &_id);
 		
 		glBindBuffer(GL_ARRAY_BUFFER, _id);
-		glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 	}
 
 	VertexBuffer::~VertexBuffer()
 	{
 		glDeleteBuffers(1, &_id);
+		std::cout << "VBO deleted" << std::endl;
 	}
 
 	void VertexBuffer::bind()

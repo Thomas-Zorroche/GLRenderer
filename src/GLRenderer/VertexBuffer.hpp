@@ -43,7 +43,7 @@ namespace glrenderer {
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(float* vertices, uint32_t size);
+		VertexBuffer(const std::vector<float>& vertices);
 		~VertexBuffer();
 
 		void bind();
