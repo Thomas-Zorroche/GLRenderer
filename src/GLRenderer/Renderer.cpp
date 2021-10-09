@@ -15,7 +15,7 @@ namespace glrenderer
 
 		glEnable(GL_DEPTH_TEST);
 		
-		setClearColor(glm::vec4(0.0, 1.0, 0.0, 1.0));
+		setClearColor(glm::vec4(1, 0.737, 0.019, 1.0));
 	}
 
 	void Renderer::free()
