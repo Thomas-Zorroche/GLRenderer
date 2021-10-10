@@ -18,7 +18,6 @@ namespace glrenderer {
 
 	void Scene::onUpdate(std::shared_ptr<Shader>& shader)
 	{
-
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (auto entity : group)
 		{
@@ -29,12 +28,14 @@ namespace glrenderer {
 		}
 	}
 
-	Entity Scene::createEntity(const std::string& label)
+	Entity Scene::createEntity(const std::string& name)
 	{
-		Entity entity = { _registry.create(), this, label };
+		Entity entity = { _registry.create(), this };
+		auto& label = entity.addComponent<LabelComponent>();
+		label.label = name == "" ? "Entity" : name;
+
 		entity.addComponent<TransformComponent>();
 		return entity;
 	}
-
 
 }

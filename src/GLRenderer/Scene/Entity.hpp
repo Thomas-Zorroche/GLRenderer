@@ -3,7 +3,6 @@
 #include "Scene.hpp"
 
 #include <entt/entt.hpp>
-#include <string>
 #include <iostream>
 
 namespace glrenderer {
@@ -12,8 +11,8 @@ namespace glrenderer {
 	{
 	public:
 		Entity() = default;
-		Entity(entt::entity id, Scene* scene, const std::string& label = "Entity");
-		Entity(const Entity& other) = default;
+		Entity(entt::entity id, Scene* scene);
+		Entity(const Entity&) = default;
 
 		~Entity();
 
@@ -44,9 +43,14 @@ namespace glrenderer {
 
 		operator bool() const { return _scene && _entityId != entt::null; }
 
+		bool operator==(const Entity& rhs) { return _entityId == rhs._entityId; }
+
 	private:
 		Scene* _scene = nullptr;
 		entt::entity _entityId = entt::null;
-		std::string _label;
 	};
+
+
 }
+
+

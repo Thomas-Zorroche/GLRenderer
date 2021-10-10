@@ -4,6 +4,7 @@
 #include <glm/ext/matrix_transform.hpp>
 
 #include <memory>
+#include <string>
 
 #include "../Mesh.hpp"
 
@@ -31,6 +32,15 @@ namespace glrenderer {
 
 	};
 
+	struct LabelComponent
+	{
+		std::string label = "Entity";
+
+		LabelComponent() = default;
+		LabelComponent(const LabelComponent&) = default;
+		LabelComponent(const std::string& label) : label(label) {}
+	};
+
 	struct MeshComponent
 	{
 		std::shared_ptr<Mesh> mesh = nullptr;
@@ -40,4 +50,6 @@ namespace glrenderer {
 		MeshComponent(const std::shared_ptr<Mesh>& mesh)
 			: mesh(mesh) {};
 	};
+
+
 }
