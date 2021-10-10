@@ -3,9 +3,7 @@
 #include "entt/entt.hpp"
 #include <string>
 #include <vector>
-
-// TEMP
-#include "../Shader.h"
+#include <glm/glm.hpp>
 
 namespace glrenderer {
 
@@ -17,7 +15,7 @@ namespace glrenderer {
 		Scene();
 		~Scene();
 
-		void onUpdate(std::shared_ptr<Shader>& shader);
+		void onUpdate(const glm::mat4& projectionMatrix); // TEMP proj matrix
 
 		Entity createEntity(const std::string& label = "");
 

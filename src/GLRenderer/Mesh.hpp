@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "VertexArray.hpp"
+#include "Material.hpp"
 
 #include <vector>
 #include <memory>
@@ -16,10 +17,12 @@ namespace glrenderer {
 	class Mesh
 	{
 	public:
-		Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices);
+		Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::shared_ptr<Material>& material = nullptr);
 		~Mesh();
 
 		const std::shared_ptr<VertexArray>& getVertexArray() const { return _VAO; }
+		
+		std::shared_ptr<Material>& getMaterial() { return _material; }
 
 		static std::shared_ptr<Mesh> createMesh(MeshShape mesh);
 
@@ -28,5 +31,6 @@ namespace glrenderer {
 
 	private:
 		std::shared_ptr<VertexArray> _VAO = nullptr;
+		std::shared_ptr<Material> _material;
 	};
 }

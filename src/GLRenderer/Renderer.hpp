@@ -17,7 +17,7 @@ namespace glrenderer {
 
 		static void updateCamera();
 
-		static void draw(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
+		static void draw(const std::shared_ptr<VertexArray>& vertexArray);
 		
 		static void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 

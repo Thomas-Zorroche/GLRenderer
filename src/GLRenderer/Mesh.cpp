@@ -7,8 +7,13 @@
 
 namespace glrenderer {
 
-	Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
+	Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::shared_ptr<Material>& material)
+		: _material(material)
 	{
+		if (material == nullptr)
+		{
+			_material = std::make_shared<Material>(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
+		}
 		setupMesh(vertices, indices);
 	}
 

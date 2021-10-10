@@ -16,15 +16,21 @@ namespace glrenderer {
 
 	}
 
-	void Scene::onUpdate(std::shared_ptr<Shader>& shader)
+	void Scene::onUpdate(const glm::mat4& projectionMatrix)
 	{
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (auto entity : group)
 		{
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
-		
-			shader->SetUniformMatrix4fv("uModelMatrix", transform.getTransformMatrix());
-			Renderer::draw(mesh.mesh->getVertexArray(), transform.getTransformMatrix());
+
+			auto& material = mesh.mesh->getMaterial();
+			material->bind();
+			{
+				material->setModelMatrix(transform.getTransformMatrix());
+				material->setProjectionMatrix(projectionMatrix);
+			}
+
+			Renderer::draw(mesh.mesh->getVertexArray());
 		}
 	}
 

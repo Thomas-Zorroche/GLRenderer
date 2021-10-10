@@ -28,13 +28,10 @@ namespace glrenderer
 		_viewProjectionMatrix = glm::mat4(1.0f);
 	}
 
-	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform)
+	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray)
 	{
-		//shader->Bind();
-
 		vertexArray->bind();
 		drawIndexed(vertexArray);
-
 	}
 
 	void Renderer::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
