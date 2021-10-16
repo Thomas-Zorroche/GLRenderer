@@ -4,6 +4,7 @@
 
 #include <entt/entt.hpp>
 #include <iostream>
+#include <string>
 
 namespace glrenderer {
 

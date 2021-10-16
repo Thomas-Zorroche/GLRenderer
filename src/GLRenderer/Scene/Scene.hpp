@@ -30,8 +30,13 @@ namespace glrenderer {
 			}
 		}
 
+		void makeUniqueLabel(std::string& label);
+
 	private:
+		bool isLabelDuplicate(const std::string& name);
+
 		friend class Entity;
+
 	private:
 		entt::registry _registry;
 	};

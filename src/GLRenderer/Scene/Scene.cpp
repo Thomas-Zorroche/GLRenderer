@@ -37,11 +37,48 @@ namespace glrenderer {
 	Entity Scene::createEntity(const std::string& name)
 	{
 		Entity entity = { _registry.create(), this };
-		auto& label = entity.addComponent<LabelComponent>();
-		label.label = name == "" ? "Entity" : name;
+		auto& labelEntity = entity.addComponent<LabelComponent>();
+		labelEntity.label = (name == "") ? "Entity" : name;
+
+		// Avoid duplicate labels
+		// TODO: Optimize this
+		if (isLabelDuplicate(labelEntity.label))
+			makeUniqueLabel(labelEntity.label);
 
 		entity.addComponent<TransformComponent>();
 		return entity;
 	}
 
+	void Scene::makeUniqueLabel(std::string& label)
+	{
+		if (!isLabelDuplicate(label))
+			return;
+
+		uint32_t index = 1;
+		std::string baseLabel = label;
+		do
+		{
+			label = baseLabel + std::to_string(index);
+			index++;
+		} while (isLabelDuplicate(label));
+	}
+
+	bool Scene::isLabelDuplicate(const std::string& label)
+	{
+		auto view = _registry.view<LabelComponent>();
+		int duplicate = 0;
+		for (auto& entityId : view)
+		{
+			Entity entity = { entityId, this };
+			std::string& labelOther = entity.getComponent<LabelComponent>().label;
+
+			if (label == labelOther)
+			{
+				duplicate++;
+				if (duplicate >= 2)
+					return true;
+			}
+		}
+		return false;
+	}
 }
