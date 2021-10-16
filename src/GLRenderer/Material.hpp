@@ -19,9 +19,7 @@ namespace glrenderer {
 		glm::vec3& diffuse() { return _diffuse; }
 		void updateDiffuse() { setDiffuse(_diffuse); }
 
-
-		void setProjectionMatrix(const glm::mat4& projection);
-		void setModelMatrix(const glm::mat4& model);
+		const std::shared_ptr<Shader>& getShader() const { return _shader; }
 
 	private:
 		std::shared_ptr<Shader> _shader;

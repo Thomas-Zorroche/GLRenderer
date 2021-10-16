@@ -15,7 +15,7 @@ namespace glrenderer {
 		Scene();
 		~Scene();
 
-		void onUpdate(const glm::mat4& projectionMatrix); // TEMP proj matrix
+		void onUpdate();
 
 		Entity createEntity(const std::string& label = "");
 

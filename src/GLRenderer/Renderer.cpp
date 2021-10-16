@@ -28,8 +28,13 @@ namespace glrenderer
 		_viewProjectionMatrix = glm::mat4(1.0f);
 	}
 
-	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray)
+	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader, 
+		const glm::mat4& transform)
 	{
+		shader->Bind();
+		shader->SetUniformMatrix4fv("uModelMatrix", transform);
+		shader->SetUniformMatrix4fv("uProjectionMatrix", _viewProjectionMatrix);
+
 		vertexArray->bind();
 		drawIndexed(vertexArray);
 	}
@@ -49,6 +54,10 @@ namespace glrenderer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
+	void Renderer::setCamera(const glm::mat4& viewProjectionMatrix)
+	{
+		_viewProjectionMatrix = viewProjectionMatrix;
+	}
 
 	// Private Function
 

@@ -26,15 +26,4 @@ namespace glrenderer {
 		_shader->SetUniform3f("uColor", value);
 	}
 
-	void Material::setProjectionMatrix(const glm::mat4& projection)
-	{
-		_shader->SetUniformMatrix4fv("uProjectionMatrix", projection);
-	}
-
-	void Material::setModelMatrix(const glm::mat4& model)
-	{
-		_shader->SetUniformMatrix4fv("uModelMatrix", model);
-	}
-
-
 }
