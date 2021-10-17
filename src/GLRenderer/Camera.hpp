@@ -14,13 +14,16 @@ namespace glrenderer {
 		void updateAspectRatio(float aspectRatio);
 
 		// User Actions
-		void zoom();
+		void zoom(float deltaY);
+		void pan(const glm::vec2& delta);
+		void rotate(const glm::vec2& delta);
+
+		void updateVectors();
 
 	private:
 		void updateViewMatrix();
 		void updateProjectionMatrix();
 		
-		void updateVectors();
 
 	private:
 		float _fov = 65.0f;
@@ -29,10 +32,14 @@ namespace glrenderer {
 		float _farClip = 1000.0f;
 
 		// Euler Angles
-		float m_yaw = -90.0f;
-		float m_pitch = 0.0f;
+		float _yaw = -90.0f;
+		float _pitch = 0.0f;
 
-		glm::vec3 _position = { 0.0f, 0.0f, 4.0f };
+		glm::vec3 _position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 _targetPoint = { 0.0f, 0.0f, 0.0f };
+		// Distance from target point
+		float _distance = 5.0f;
+
 		glm::vec3 _frontVector = { 0.0f, 0.0f, -1.0f };
 		glm::vec3 _upVector = { 0.0f, 1.0f, 0.0f };
 		glm::vec3 _rightVector;
