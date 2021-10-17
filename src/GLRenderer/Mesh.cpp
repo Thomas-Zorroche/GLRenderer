@@ -3,7 +3,7 @@
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 
-#include "Shapes/ShapePlan.hpp"
+#include "Shapes.hpp"
 
 namespace glrenderer {
 
@@ -48,8 +48,12 @@ namespace glrenderer {
 				ShapePlan plan;
 				return std::make_shared<Mesh>(plan.vertices, plan.indices);
 			}
-			case glrenderer::MeshShape::Cube: return nullptr;
-			default:				          return nullptr;
+			case glrenderer::MeshShape::Cube:
+			{
+				ShapeCube cube;
+				return std::make_shared<Mesh>(cube.vertices, cube.indices);
+			}
+			default: return nullptr;
 		}
 
 
