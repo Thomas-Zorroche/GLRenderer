@@ -7,9 +7,7 @@ namespace glrenderer {
 
 	Camera::Camera()
 	{
-		_direction = glm::normalize(_position - _target);
-		_rightVector = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), _direction));
-		_upVector = glm::cross(_direction, _rightVector);
+		updateVectors();
 
 		updateViewMatrix();
 		updateProjectionMatrix();
@@ -34,7 +32,7 @@ namespace glrenderer {
 
 	void Camera::updateViewMatrix()
 	{
-		_viewMatrix = glm::lookAt(_position, _target, _upVector);
+		_viewMatrix = lookAt(_position, _position + _frontVector, _upVector);
 		_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
 	}
 
@@ -44,5 +42,16 @@ namespace glrenderer {
 		_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
 	}
 
+	void Camera::updateVectors()
+	{
+		_frontVector = {
+			glm::cos(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch)),
+			glm::sin(glm::radians(m_pitch)),
+			glm::sin(glm::radians(m_yaw)) * glm::cos(glm::radians(m_pitch))
+		};
 
+		_frontVector = glm::normalize(_frontVector);
+		_rightVector = glm::normalize(glm::cross(_frontVector, glm::vec3(0.0f, 1.0f, 0.0f)));
+		_upVector = glm::normalize(glm::cross(_rightVector, _frontVector));
+	}
 }

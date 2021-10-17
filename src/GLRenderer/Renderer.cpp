@@ -65,7 +65,7 @@ namespace glrenderer
 	{
 		uint32_t count = vertexArray->getIndexBuffer() ? vertexArray->getIndexBuffer()->getCount() : 0;
 
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); // it works with indexCount = 0 ...
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 

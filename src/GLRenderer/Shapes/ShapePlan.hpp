@@ -8,10 +8,10 @@ namespace {
 	struct ShapePlan
 	{
 		std::vector<float> vertices = {
-			-0.5f, -0.5f, -3.0f,
-			 0.5f, -0.5f, -3.0f,
-			 0.5f,  0.5f, -3.0f,
-			-0.5f,  0.5f, -3.0f,
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.5f,  0.5f, 0.0f,
+			-0.5f,  0.5f, 0.0f,
 		};
 
 		std::vector<uint32_t> indices = {

@@ -19,19 +19,23 @@ namespace glrenderer {
 	private:
 		void updateViewMatrix();
 		void updateProjectionMatrix();
+		
+		void updateVectors();
 
 	private:
-		float _fov = 45.0f;
+		float _fov = 65.0f;
 		float _aspectRatio = 1.778f;
 		float _nearClip = 0.1f;
 		float _farClip = 1000.0f;
 
-		glm::vec3 _position = { 0.0f, 0.0f, -5.0f };
-		glm::vec3 _upVector;
+		// Euler Angles
+		float m_yaw = -90.0f;
+		float m_pitch = 0.0f;
+
+		glm::vec3 _position = { 0.0f, 0.0f, 4.0f };
+		glm::vec3 _frontVector = { 0.0f, 0.0f, -1.0f };
+		glm::vec3 _upVector = { 0.0f, 1.0f, 0.0f };
 		glm::vec3 _rightVector;
-		// Pointing in the reverse direction
-		glm::vec3 _direction;
-		glm::vec3 _target = { 0.0f, 0.0f, 0.0f };
 
 		glm::mat4 _viewProjectionMatrix;
 		glm::mat4 _viewMatrix;

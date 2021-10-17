@@ -24,7 +24,7 @@ namespace glrenderer {
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
 			auto& material = mesh.mesh->getMaterial();
 
-			Renderer::draw(mesh.mesh->getVertexArray(), material->getShader(), transform.getTransformMatrix());
+			Renderer::draw(mesh.mesh->getVertexArray(), material->getShader(), transform.getModelMatrix());
 		}
 	}
 
