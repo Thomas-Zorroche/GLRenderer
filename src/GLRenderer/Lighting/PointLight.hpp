@@ -12,6 +12,8 @@ namespace glrenderer {
 
 		~PointLight() = default;
 
+		PointLight * isPointLight() override { return this; }
+
 	private:
 		void updateAttenuationValues();
 

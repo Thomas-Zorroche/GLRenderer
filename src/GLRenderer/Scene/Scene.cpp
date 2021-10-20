@@ -4,6 +4,9 @@
 
 #include "Entity.hpp"
 
+// TEMP
+#include "GLRenderer/Lighting/PointLight.hpp"
+
 namespace glrenderer {
 
 	Scene::Scene()
@@ -18,14 +21,6 @@ namespace glrenderer {
 
 	void Scene::onUpdate()
 	{
-		// Retrive lights TEMP
-		//auto viewLight = _registry.group<LightComponent>();
-		//for (auto entityLight : viewLight)
-		//{
-		//	entityLight
-		//}
-
-
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (auto entity : group)
 		{
@@ -33,15 +28,8 @@ namespace glrenderer {
 			auto& shader = mesh.mesh->getMaterial()->getShader();
 
 			shader->Bind();
-
-			shader->SetUniform3f("pointLight.diffuse", { 1.0, 0.0, 0.0 });
-			shader->SetUniform3f("pointLight.ambient", { 1.0, 1.0, 1.0 });
-			shader->SetUniform3f("pointLight.specular", { 1.0, 1.0, 1.0 });
-			shader->SetUniform3f("pointLight.position", { 4.0, 5.0, 5.0 });
-			shader->SetUniform1f("pointLight.linear",   0.07);
-			shader->SetUniform1f("pointLight.quadratic", 0.017);
-			shader->SetUniform1f("pointLight.intensity", 1.0f);
-
+			sendLightingUniforms(shader);
+			
 			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix());
 		}
 	}
@@ -93,4 +81,37 @@ namespace glrenderer {
 		}
 		return false;
 	}
+
+	void Scene::sendLightingUniforms(const std::shared_ptr<Shader>& shader)
+	{
+		auto viewLight = _registry.view<LightComponent>();
+		uint32_t lightIndex = 0;
+		std::string lightIndexStr = std::to_string(lightIndex);
+
+		for (auto entityLight : viewLight)
+		{
+			Entity entity = { entityLight, this };
+			std::shared_ptr<BaseLight>& baseLight = entity.getComponent<LightComponent>().light;
+
+			// Common light properties
+			shader->SetUniform3f("pointLights[" + lightIndexStr + "].diffuse", baseLight->getColor());
+			shader->SetUniform3f("pointLights[" + lightIndexStr + "].ambient", { 1.0, 1.0, 1.0 });
+			shader->SetUniform3f("pointLights[" + lightIndexStr + "].specular", { 1.0, 1.0, 1.0 });
+			shader->SetUniform1f("pointLights[" + lightIndexStr + "].intensity", baseLight->getIntensity());
+
+			// Special light properties
+			PointLight* light = baseLight->isPointLight();
+			if (light)
+			{
+				glm::vec3& position = entity.getComponent<TransformComponent>().location;
+				shader->SetUniform3f("pointLights[" + lightIndexStr + "].position", position);
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].linear", 0.07);
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].quadratic", 0.017);
+			}
+
+			lightIndex++;
+			lightIndexStr = std::to_string(lightIndex);
+		}
+	}
+
 }

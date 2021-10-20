@@ -5,6 +5,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "../Shader.h"
+
 namespace glrenderer {
 
 	class Entity;
@@ -32,8 +34,12 @@ namespace glrenderer {
 
 		void makeUniqueLabel(std::string& label);
 
+
 	private:
 		bool isLabelDuplicate(const std::string& name);
+		
+		// TODO: Move this outside Scene class
+		void sendLightingUniforms(const std::shared_ptr<Shader>& shader);
 
 		friend class Entity;
 

@@ -34,13 +34,13 @@ namespace glrenderer {
 		float _farClip = 1000.0f;
 
 		// Euler Angles
-		float _yaw = -90.0f;
-		float _pitch = 0.0f;
+		float _yaw = 47.0f;
+		float _pitch = -28.0f;
 
 		glm::vec3 _position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 _targetPoint = { 0.0f, 0.0f, 0.0f };
 		// Distance from target point
-		float _distance = 5.0f;
+		float _distance = 15.0f;
 
 		glm::vec3 _frontVector = { 0.0f, 0.0f, -1.0f };
 		glm::vec3 _upVector = { 0.0f, 1.0f, 0.0f };
