@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 #include <vector>
+#include <glm/glm.hpp>
+
+#include "VertexData.hpp"
+
 
 namespace glrenderer {
 
@@ -43,7 +47,7 @@ namespace glrenderer {
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(const std::vector<float>& vertices);
+		VertexBuffer(const std::vector<VertexData>& vertices);
 		~VertexBuffer();
 
 		void bind();

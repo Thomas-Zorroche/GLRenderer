@@ -3,14 +3,15 @@
 #include <glad/glad.h>
 #include <iostream>
 
+
 namespace glrenderer {
 
-	VertexBuffer::VertexBuffer(const std::vector<float>& vertices)
+	VertexBuffer::VertexBuffer(const std::vector<VertexData>& vertices)
 	{
 		glCreateBuffers(1, &_id);
 		
 		glBindBuffer(GL_ARRAY_BUFFER, _id);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), &vertices[0], GL_STATIC_DRAW);
 	}
 
 	VertexBuffer::~VertexBuffer()

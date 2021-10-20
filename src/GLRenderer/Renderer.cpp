@@ -6,7 +6,7 @@
 namespace glrenderer
 {
 
-	glm::mat4 Renderer::_viewProjectionMatrix = glm::mat4(1.0f);
+	Renderer::CameraData Renderer::_cameraData;
 
 	void Renderer::init()
 	{
@@ -15,7 +15,7 @@ namespace glrenderer
 
 		glEnable(GL_DEPTH_TEST);
 		
-		setClearColor(glm::vec4(1, 0.737, 0.019, 1.0));
+		setClearColor(glm::vec4(0.15, 0.15, 0.15, 1.0));
 	}
 
 	void Renderer::free()
@@ -23,17 +23,13 @@ namespace glrenderer
 
 	}
 
-	void Renderer::updateCamera()
-	{
-		_viewProjectionMatrix = glm::mat4(1.0f);
-	}
-
 	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader, 
 		const glm::mat4& transform)
 	{
 		shader->Bind();
 		shader->SetUniformMatrix4fv("uModelMatrix", transform);
-		shader->SetUniformMatrix4fv("uProjectionMatrix", _viewProjectionMatrix);
+		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
+		shader->SetUniform3f("uCameraPos", _cameraData.position);
 
 		vertexArray->bind();
 		drawIndexed(vertexArray);
@@ -54,9 +50,10 @@ namespace glrenderer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void Renderer::setCamera(const glm::mat4& viewProjectionMatrix)
+	void Renderer::setCamera(const std::shared_ptr<Camera>& camera)
 	{
-		_viewProjectionMatrix = viewProjectionMatrix;
+		_cameraData.viewProjectionMatrix = camera->getViewProjectionMatrix();
+		_cameraData.position = camera->getPosition();
 	}
 
 	// Private Function

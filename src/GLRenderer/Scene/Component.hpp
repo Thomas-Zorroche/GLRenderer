@@ -7,6 +7,7 @@
 #include <string>
 
 #include "../Mesh.hpp"
+#include "../Lighting/BaseLight.hpp"
 
 namespace glrenderer {
 
@@ -51,6 +52,16 @@ namespace glrenderer {
 		MeshComponent(const MeshComponent&) = default;
 		MeshComponent(const std::shared_ptr<Mesh>& mesh)
 			: mesh(mesh) {};
+	};
+
+	struct LightComponent
+	{
+		std::shared_ptr<BaseLight> light = nullptr;
+
+		LightComponent() = default;
+		LightComponent(const LightComponent&) = default;
+		LightComponent(const std::shared_ptr<BaseLight>& light)
+			: light(light) {}
 	};
 
 

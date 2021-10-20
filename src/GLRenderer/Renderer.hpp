@@ -5,6 +5,8 @@
 
 #include "Shader.h"
 #include "VertexArray.hpp"
+#include "Camera.hpp"
+
 
 namespace glrenderer {
 
@@ -15,8 +17,6 @@ namespace glrenderer {
 
 		static void free();
 
-		static void updateCamera();
-
 		static void draw(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader,
 			const glm::mat4& transform);
 		
@@ -24,7 +24,7 @@ namespace glrenderer {
 
 		static void setClearColor(const glm::vec4& color);
 
-		static void setCamera(const glm::mat4& viewProjectionMatrix);
+		static void setCamera(const std::shared_ptr<Camera>& camera);
 
 		static void clear();
 
@@ -32,6 +32,11 @@ namespace glrenderer {
 		static void drawIndexed(const std::shared_ptr<VertexArray>& vertexArray);
 
 	private:
-		static glm::mat4 _viewProjectionMatrix;
+		struct CameraData
+		{
+			glm::vec3 position;
+			glm::mat4 viewProjectionMatrix;
+		};
+		static CameraData _cameraData;
 	};
 }

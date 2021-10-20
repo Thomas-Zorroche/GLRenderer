@@ -7,12 +7,12 @@
 
 namespace glrenderer {
 
-	Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::shared_ptr<Material>& material)
+	Mesh::Mesh(const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indices, const std::shared_ptr<Material>& material)
 		: _material(material)
 	{
 		if (material == nullptr)
 		{
-			_material = std::make_shared<Material>(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
+			_material = std::make_shared<Material>(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/LightingColor.frag"));
 		}
 		setupMesh(vertices, indices);
 	}
@@ -22,14 +22,17 @@ namespace glrenderer {
 	
 	}
 
-	void Mesh::setupMesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
+	void Mesh::setupMesh(const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indices)
 	{
 		_VAO = std::make_shared<glrenderer::VertexArray>();
 
 		// Vertex Buffer
 		const auto& VBO = std::make_shared<VertexBuffer>(vertices);
 		glrenderer::BufferLayout layout = {
-			{glrenderer::BufferAttribute()} // position
+			{
+				glrenderer::BufferAttribute(), // position
+				glrenderer::BufferAttribute()  // normals
+			} 
 		};
 		VBO->setLayout(layout);
 		_VAO->setVertexBuffer(VBO);

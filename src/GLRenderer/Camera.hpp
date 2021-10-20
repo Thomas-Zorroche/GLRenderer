@@ -11,6 +11,8 @@ namespace glrenderer {
 		~Camera();
 
 		const glm::mat4& getViewProjectionMatrix() const { return _viewProjectionMatrix; }
+		const glm::vec3& getPosition() const { return _position; }
+		
 		void updateAspectRatio(float aspectRatio);
 
 		// User Actions

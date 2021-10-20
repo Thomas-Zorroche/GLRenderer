@@ -18,13 +18,31 @@ namespace glrenderer {
 
 	void Scene::onUpdate()
 	{
+		// Retrive lights TEMP
+		//auto viewLight = _registry.group<LightComponent>();
+		//for (auto entityLight : viewLight)
+		//{
+		//	entityLight
+		//}
+
+
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (auto entity : group)
 		{
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
-			auto& material = mesh.mesh->getMaterial();
+			auto& shader = mesh.mesh->getMaterial()->getShader();
 
-			Renderer::draw(mesh.mesh->getVertexArray(), material->getShader(), transform.getModelMatrix());
+			shader->Bind();
+
+			shader->SetUniform3f("pointLight.diffuse", { 1.0, 0.0, 0.0 });
+			shader->SetUniform3f("pointLight.ambient", { 1.0, 1.0, 1.0 });
+			shader->SetUniform3f("pointLight.specular", { 1.0, 1.0, 1.0 });
+			shader->SetUniform3f("pointLight.position", { 4.0, 5.0, 5.0 });
+			shader->SetUniform1f("pointLight.linear",   0.07);
+			shader->SetUniform1f("pointLight.quadratic", 0.017);
+			shader->SetUniform1f("pointLight.intensity", 1.0f);
+
+			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix());
 		}
 	}
 
