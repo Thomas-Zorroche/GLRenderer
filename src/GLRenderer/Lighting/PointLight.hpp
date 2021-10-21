@@ -14,17 +14,20 @@ namespace glrenderer {
 
 		PointLight * isPointLight() override { return this; }
 
-	private:
-		void updateAttenuationValues();
+		float getRadius() const { return _radius; }
+		void setRadius(float radius);
+
+		float getLinear() const { return _linear; }
+		float getQuadratic() const { return _quadratic; }
 
 	private:
-		float _radius = 1.0f;
+		float _radius = 20.0f;
 
 		// Attenuation values
-		const float _constant = 20.0;
+		const float _constant = 20.0f;
 		float _linear;
 		float _quadratic;
 
-		static const std::unordered_map<int, std::pair<float, float>> _attenuationTable;
+		static const std::vector<glm::vec3> s_attenuationTable;
 	};
 }

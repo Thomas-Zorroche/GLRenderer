@@ -105,8 +105,8 @@ namespace glrenderer {
 			{
 				glm::vec3& position = entity.getComponent<TransformComponent>().location;
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].position", position);
-				shader->SetUniform1f("pointLights[" + lightIndexStr + "].linear", 0.07);
-				shader->SetUniform1f("pointLights[" + lightIndexStr + "].quadratic", 0.017);
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].linear", light->getLinear());
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].quadratic", light->getQuadratic());
 			}
 
 			lightIndex++;
