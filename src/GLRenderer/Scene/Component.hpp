@@ -24,9 +24,9 @@ namespace glrenderer {
 		{
 			glm::mat4 trans = glm::translate(glm::mat4(1.0f), location);
 
-			glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), glm::vec3(1, 0, 0));
+			glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1));
 			rot = glm::rotate(rot, glm::radians(rotation.y), glm::vec3(0, 1, 0));
-			rot = glm::rotate(rot, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+			rot = glm::rotate(rot, glm::radians(rotation.x), glm::vec3(1, 0, 0));
 
 			glm::mat4 scl = glm::scale(glm::mat4(1.0f), scale);
 
