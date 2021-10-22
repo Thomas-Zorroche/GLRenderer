@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "../Math/Math.hpp"
+
 namespace glrenderer {
 
     /*
@@ -27,11 +29,6 @@ namespace glrenderer {
 	{
         setRadius(_radius);
 	}
-
-    float lerp(float start, float end, float t)
-    {
-        return start * (1 - t) + end * t;
-    }
 
     void PointLight::setRadius(float radius)
     {
@@ -76,8 +73,8 @@ namespace glrenderer {
 
                 float t = (radius - minRadius[0]) / (maxRadius[0] - minRadius[0]);
 
-                _linear = lerp(minRadius[1], maxRadius[1], t);
-                _quadratic = lerp(minRadius[2], maxRadius[2], t);
+                _linear = math::lerp(minRadius[1], maxRadius[1], t);
+                _quadratic = math::lerp(minRadius[2], maxRadius[2], t);
                 return;
             }
         }

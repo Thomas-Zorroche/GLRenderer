@@ -15,10 +15,15 @@ namespace glrenderer {
 		void bind();
 		void unbind();
 
+		const glm::vec3& getDiffuse() const { return _diffuse; }
+		glm::vec3& getDiffuse() { return _diffuse; }
+		void updateDiffuse();
 
-		void setDiffuse(const glm::vec3& value);
-		glm::vec3& diffuse() { return _diffuse; }
-		void updateDiffuse() { setDiffuse(_diffuse); }
+		const float& getRoughness() const { return _roughness; }
+		float& getRoughness() { return _roughness; }
+		void updateRoughness();
+
+		const float& getShininess() const { return _shininess; }
 
 		const std::shared_ptr<Shader>& getShader() const { return _shader; }
 		void setShader(const std::shared_ptr<Shader>& shader) { _shader = shader; }
@@ -28,5 +33,7 @@ namespace glrenderer {
 		std::string _name;
 
 		glm::vec3 _diffuse = glm::vec3(0.9f);
+		float _roughness = 0.5f;
+		float _shininess = 450.0f;
 	};
 }

@@ -1,4 +1,8 @@
 ﻿#include "Material.hpp"
+#include "Math/Math.hpp"
+
+// TEMP
+#include <iostream>
 
 namespace glrenderer {
 
@@ -7,8 +11,8 @@ namespace glrenderer {
 	{
 		if (_shader)
 		{
-			bind();
-			setDiffuse(_diffuse);
+			updateDiffuse();
+			updateRoughness();
 		}
 	}
 
@@ -23,10 +27,19 @@ namespace glrenderer {
 
 	}
 
-	void Material::setDiffuse(const glm::vec3& value)
+	void Material::updateDiffuse()
 	{
-		_diffuse = value;
-		_shader->SetUniform3f("uColor", value);
+		bind();
+		_shader->SetUniform3f("uColor", _diffuse);
 	}
+
+	void Material::updateRoughness()
+	{
+		_shininess = math::lerp(0.0f, 900.0f, 1.0 -_roughness);
+
+		bind();
+		_shader->SetUniform1f("uShininess", _shininess);
+	}
+
 
 }
