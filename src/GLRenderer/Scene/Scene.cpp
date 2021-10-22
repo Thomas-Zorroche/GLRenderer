@@ -6,6 +6,7 @@
 
 // TEMP
 #include "GLRenderer/Lighting/PointLight.hpp"
+#include "GLRenderer/Lighting/DirectionalLight.hpp"
 
 namespace glrenderer {
 
@@ -88,25 +89,43 @@ namespace glrenderer {
 		uint32_t lightIndex = 0;
 		std::string lightIndexStr = std::to_string(lightIndex);
 
+		// TEMP
+		bool dirLightUsed = false;
+
 		for (auto entityLight : viewLight)
 		{
 			Entity entity = { entityLight, this };
 			std::shared_ptr<BaseLight>& baseLight = entity.getComponent<LightComponent>().light;
 
-			// Common light properties
-			shader->SetUniform3f("pointLights[" + lightIndexStr + "].diffuse", baseLight->getColor());
-			shader->SetUniform3f("pointLights[" + lightIndexStr + "].ambient", { 1.0, 1.0, 1.0 });
-			shader->SetUniform3f("pointLights[" + lightIndexStr + "].specular", { 1.0, 1.0, 1.0 });
-			shader->SetUniform1f("pointLights[" + lightIndexStr + "].intensity", baseLight->getIntensity());
-
-			// Special light properties
-			PointLight* light = baseLight->isPointLight();
-			if (light)
+			PointLight* pointLight = baseLight->isPointLight();
+			if (pointLight)
 			{
+				shader->SetUniform3f("pointLights[" + lightIndexStr + "].diffuse", baseLight->getColor());
+				shader->SetUniform3f("pointLights[" + lightIndexStr + "].ambient", { 1.0, 1.0, 1.0 });
+				shader->SetUniform3f("pointLights[" + lightIndexStr + "].specular", { 1.0, 1.0, 1.0 });
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].intensity", baseLight->getIntensity());
+
 				glm::vec3& position = entity.getComponent<TransformComponent>().location;
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].position", position);
-				shader->SetUniform1f("pointLights[" + lightIndexStr + "].linear", light->getLinear());
-				shader->SetUniform1f("pointLights[" + lightIndexStr + "].quadratic", light->getQuadratic());
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].linear", pointLight->getLinear());
+				shader->SetUniform1f("pointLights[" + lightIndexStr + "].quadratic", pointLight->getQuadratic());
+				continue;
+			}
+
+			DirectionalLight* dirLight = baseLight->isDirectionalLight();
+			if (dirLight && !dirLightUsed)
+			{
+				dirLightUsed = true;
+
+				shader->SetUniform3f("directionalLight.diffuse", baseLight->getColor());
+				shader->SetUniform3f("directionalLight.ambient", { 1.0, 1.0, 1.0 });
+				shader->SetUniform3f("directionalLight.specular", { 1.0, 1.0, 1.0 });
+				shader->SetUniform1f("directionalLight.intensity", baseLight->getIntensity());
+
+				glm::vec3& rotation = entity.getComponent<TransformComponent>().rotation;
+				shader->SetUniform3f("directionalLight.direction", rotation);
+
+				continue;
 			}
 
 			lightIndex++;

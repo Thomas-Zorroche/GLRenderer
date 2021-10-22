@@ -6,10 +6,11 @@
 namespace glrenderer {
 
 	class PointLight;
+	class DirectionalLight;
 
 	enum class LightType
 	{
-		Point = 0, Dir, Spot, Area
+		Point = 0, Directional, Spot, Area
 	};
 
 	class BaseLight
@@ -21,6 +22,7 @@ namespace glrenderer {
 		virtual ~BaseLight() = default;
 
 		virtual PointLight * isPointLight() = 0;
+		virtual DirectionalLight* isDirectionalLight() = 0;
 
 		static std::shared_ptr<BaseLight> createLight(LightType type);
 

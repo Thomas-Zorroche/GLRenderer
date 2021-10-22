@@ -13,6 +13,7 @@ namespace glrenderer {
 		~PointLight() = default;
 
 		PointLight * isPointLight() override { return this; }
+		DirectionalLight* isDirectionalLight() override { return nullptr; }
 
 		float getRadius() const { return _radius; }
 		void setRadius(float radius);
