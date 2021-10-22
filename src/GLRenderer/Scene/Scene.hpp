@@ -17,7 +17,7 @@ namespace glrenderer {
 		Scene();
 		~Scene();
 
-		void onUpdate();
+		void onUpdate(const Entity& entitySelected);
 
 		Entity createEntity(const std::string& label = "");
 

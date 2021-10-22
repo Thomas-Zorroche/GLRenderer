@@ -15,11 +15,13 @@ namespace glrenderer {
 		void bind();
 		void unbind();
 
+
 		void setDiffuse(const glm::vec3& value);
 		glm::vec3& diffuse() { return _diffuse; }
 		void updateDiffuse() { setDiffuse(_diffuse); }
 
 		const std::shared_ptr<Shader>& getShader() const { return _shader; }
+		void setShader(const std::shared_ptr<Shader>& shader) { _shader = shader; }
 
 	private:
 		std::shared_ptr<Shader> _shader;

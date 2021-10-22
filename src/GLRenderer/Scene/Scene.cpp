@@ -19,10 +19,10 @@ namespace glrenderer {
 
 	}
 
-	void Scene::onUpdate()
+	void Scene::onUpdate(const Entity& entitySelected)
 	{
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
-		for (auto entity : group)
+		for (const auto entity : group)
 		{
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
 			auto& shader = mesh.mesh->getMaterial()->getShader();
@@ -30,7 +30,7 @@ namespace glrenderer {
 			shader->Bind();
 			sendLightingUniforms(shader);
 			
-			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix());
+			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(), entitySelected == entity);
 		}
 	}
 

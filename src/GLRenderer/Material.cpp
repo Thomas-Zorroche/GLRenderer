@@ -5,8 +5,11 @@ namespace glrenderer {
 	Material::Material(const std::shared_ptr<Shader>& shader, const std::string& name)
 		: _shader(shader), _name(name)
 	{
-		bind();
-		setDiffuse(_diffuse);
+		if (_shader)
+		{
+			bind();
+			setDiffuse(_diffuse);
+		}
 	}
 
 	void Material::bind()
