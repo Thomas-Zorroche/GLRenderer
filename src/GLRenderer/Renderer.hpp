@@ -19,7 +19,12 @@ namespace glrenderer {
 		static void free();
 
 		static void draw(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader,
-			const glm::mat4& transform, bool selected = false);
+			const glm::mat4& transform, bool selected = false, unsigned int depthId = 0);
+
+		static void drawDepth(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform,
+			const glm::mat4& lightMatrix);
+
+		static void drawLine(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform, bool selected = false);
 		
 		static void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
@@ -28,6 +33,7 @@ namespace glrenderer {
 		static void clear();
 		
 		static void setCamera(const std::shared_ptr<Camera>& camera);
+		static void setCamera(const glm::mat4& view, const glm::vec3& cameraPosition);
 
 
 	private:
@@ -42,6 +48,7 @@ namespace glrenderer {
 		static CameraData _cameraData;
 
 		// TEMP
-		static Material entitySelectedMaterial;
+		static Material flatMaterial;
+		static Material depthMaterial;
 	};
 }

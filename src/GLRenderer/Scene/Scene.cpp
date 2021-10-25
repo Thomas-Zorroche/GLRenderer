@@ -4,11 +4,55 @@
 
 #include "Entity.hpp"
 
+#include "glm/gtc/matrix_transform.hpp"
+
 // TEMP
 #include "GLRenderer/Lighting/PointLight.hpp"
 #include "GLRenderer/Lighting/DirectionalLight.hpp"
 
 namespace glrenderer {
+
+	glm::mat4 Scene::getLightSpaceMatrix()
+	{
+		// TODO member dirLight
+		glm::vec3 lightDirection;
+		glm::mat4 rot;
+
+		float far_plane = 0.0f;
+
+		auto view = _registry.view<LightComponent>();
+		for (auto& entityId : view)
+		{
+			Entity entity = { entityId, this };
+			auto light = entity.getComponent<LightComponent>().light;
+			DirectionalLight* dirLight = light->isDirectionalLight();
+			if (dirLight)
+			{
+				far_plane = dirLight->getFarPlane();
+				lightDirection = entity.getComponent<LineComponent>().line->getDirection();
+
+				auto rotation = entity.getComponent<TransformComponent>().rotation;
+				// TODO optimize this
+				rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1));
+				rot = glm::rotate(rot, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+				rot = glm::rotate(rot, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+
+				break;
+			}
+		}
+
+		glm::mat4 lightView = glm::lookAt(
+			glm::vec3(rot * glm::vec4(lightDirection, 1.0)) * glm::vec3(-1.1), // position
+			glm::vec3(rot * glm::vec4(lightDirection, 1.0)),   // target
+			glm::vec3(0.0f, 1.0f, 0.0f)    // up vector
+		);
+		float near_plane = 1.0f;
+		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+
+		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+		
+		return lightSpaceMatrix;
+	}
 
 	Scene::Scene()
 	{
@@ -20,18 +64,45 @@ namespace glrenderer {
 
 	}
 
-	void Scene::onUpdate(const Entity& entitySelected)
+	void Scene::onUpdate(const Entity& entitySelected, bool depth, unsigned int depthId)
 	{
+		// Render Mesh
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (const auto entity : group)
 		{
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
-			auto& shader = mesh.mesh->getMaterial()->getShader();
 
+			// Depth rendering (shadow mapping)
+			if (depth)
+			{
+				Renderer::drawDepth(mesh.mesh->getVertexArray(), transform.getModelMatrix(),
+					getLightSpaceMatrix());
+				continue;
+			}
+
+			// Main rendering
+			auto& shader = mesh.mesh->getMaterial()->getShader();
 			shader->Bind();
+
+			// TODO Optimize this
+			glm::mat4 lightSpaceMatrix = getLightSpaceMatrix();
+			shader->SetUniformMatrix4fv("uLightSpaceMatrix", lightSpaceMatrix);
+
 			sendLightingUniforms(shader);
-			
-			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(), entitySelected == entity);
+			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(), 
+				entitySelected == entity, depthId);
+		}
+
+		// Render Lines
+		if (!depth)
+		{
+			auto group2 = _registry.group<LineComponent>(entt::get<TransformComponent>);
+			for (const auto entity : group2)
+			{
+				auto [transform, line] = group2.get<TransformComponent, LineComponent>(entity);
+
+				Renderer::drawLine(line.line->getVertexArray(), transform.getModelMatrix(), entitySelected == entity);
+			}
 		}
 	}
 
@@ -90,6 +161,7 @@ namespace glrenderer {
 		std::string lightIndexStr = std::to_string(lightIndex);
 
 		// TEMP
+		// Only one directional light can be used
 		bool dirLightUsed = false;
 
 		for (auto entityLight : viewLight)
@@ -118,13 +190,18 @@ namespace glrenderer {
 				dirLightUsed = true;
 
 				shader->SetUniform3f("directionalLight.diffuse", baseLight->getColor());
-				shader->SetUniform3f("directionalLight.ambient", { 1.0, 1.0, 1.0 });
+				shader->SetUniform3f("directionalLight.ambient", { 0.8, 0.8, 0.8 });
 				shader->SetUniform3f("directionalLight.specular", { 1.0, 1.0, 1.0 });
 				shader->SetUniform1f("directionalLight.intensity", baseLight->getIntensity());
 
-				glm::vec3& rotation = entity.getComponent<TransformComponent>().rotation;
-				shader->SetUniform3f("directionalLight.direction", rotation);
+				auto& line = entity.getComponent<LineComponent>().line;
+				auto rotation = entity.getComponent<TransformComponent>().rotation;
+				// TODO optimize this
+				glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0, 0, 1));
+				rot = glm::rotate(rot, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+				rot = glm::rotate(rot, glm::radians(rotation.x), glm::vec3(1, 0, 0));
 
+				shader->SetUniform3f("directionalLight.direction", rot * glm::vec4(line->getDirection(), 1.0f));
 				continue;
 			}
 

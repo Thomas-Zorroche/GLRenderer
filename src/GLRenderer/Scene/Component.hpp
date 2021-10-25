@@ -8,6 +8,7 @@
 
 #include "../Mesh.hpp"
 #include "../Lighting/BaseLight.hpp"
+#include "../Line.hpp"
 
 namespace glrenderer {
 
@@ -32,7 +33,6 @@ namespace glrenderer {
 
 			return trans * rot * scl;
 		}
-
 	};
 
 	struct LabelComponent
@@ -62,6 +62,16 @@ namespace glrenderer {
 		LightComponent(const LightComponent&) = default;
 		LightComponent(const std::shared_ptr<BaseLight>& light)
 			: light(light) {}
+	};
+
+	struct LineComponent
+	{
+		std::shared_ptr<Line> line = nullptr;
+
+		LineComponent() = default;
+		LineComponent(const LineComponent&) = default;
+		LineComponent(const std::shared_ptr<Line>& line)
+			: line(line) {}
 	};
 
 

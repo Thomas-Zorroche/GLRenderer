@@ -8,7 +8,9 @@ namespace glrenderer
 {
 
 	Renderer::CameraData Renderer::_cameraData;
-	Material Renderer::entitySelectedMaterial = Material(nullptr);
+
+	Material Renderer::flatMaterial = Material(nullptr);
+	Material Renderer::depthMaterial = Material(nullptr);
 
 
 	void Renderer::init()
@@ -17,15 +19,16 @@ namespace glrenderer
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
 
 		glEnable(GL_STENCIL_TEST);
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		
+
+				
 		setClearColor(glm::vec4(0.15, 0.15, 0.15, 1.0));
 
-		entitySelectedMaterial.setShader(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
+		flatMaterial.setShader(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
+		depthMaterial.setShader(std::make_shared<Shader>("res/shaders/Depth.vert", "res/shaders/Depth.frag"));
 	}
 
 	void Renderer::free()
@@ -33,8 +36,26 @@ namespace glrenderer
 
 	}
 
+	void Renderer::drawDepth(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform,
+		const glm::mat4& lightMatrix)
+	{ 
+		auto& shader = depthMaterial.getShader();
+		shader->Bind();
+		shader->SetUniformMatrix4fv("uModelMatrix", transform);
+		shader->SetUniformMatrix4fv("uProjectionMatrix", lightMatrix);
+		glStencilMask(0x00);
+
+		vertexArray->bind();
+
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_FRONT);
+		drawIndexed(vertexArray);
+		//glCullFace(GL_BACK); 
+		//glDisable(GL_CULL_FACE);
+	}
+
 	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader, 
-		const glm::mat4& transform, bool selected)
+		const glm::mat4& transform, bool selected, unsigned int depthId)
 	{
 		if (selected)
 		{
@@ -50,6 +71,10 @@ namespace glrenderer
 		shader->SetUniformMatrix4fv("uModelMatrix", transform);
 		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 		shader->SetUniform3f("uCameraPos", _cameraData.position);
+		
+		shader->SetUniform1i("shadowMap", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthId);
 
 		vertexArray->bind();
 		drawIndexed(vertexArray);
@@ -61,7 +86,7 @@ namespace glrenderer
 			//glDisable(GL_DEPTH_TEST);
 
 			// Draw selected entity with x1.1 scale
-			auto& entitySelectedShader = entitySelectedMaterial.getShader();
+			auto& entitySelectedShader = flatMaterial.getShader();
 			entitySelectedShader->Bind();
 			entitySelectedShader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 			entitySelectedShader->SetUniformMatrix4fv("uModelMatrix", glm::scale(transform, glm::vec3(1.02f)));
@@ -74,6 +99,22 @@ namespace glrenderer
 			//glEnable(GL_DEPTH_TEST);
 		}
 	}
+
+	void Renderer::drawLine(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform, bool selected)
+	{
+		// TODO move material and color constant to SCENE
+		// renderer should only receive VAO, Transform and shader
+		auto& shader = flatMaterial.getShader();
+		shader->Bind();
+		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
+		shader->SetUniformMatrix4fv("uModelMatrix", transform);
+		shader->SetUniform3f("uColor", selected ? glm::vec3(0.0f, 0.95f, 0.40f) : glm::vec3(0.0f, 0.0f, 0.0f));
+
+		glStencilMask(0x00);
+		vertexArray->bind();
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+
 
 	void Renderer::setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
@@ -96,6 +137,13 @@ namespace glrenderer
 		_cameraData.viewProjectionMatrix = camera->getViewProjectionMatrix();
 		_cameraData.position = camera->getPosition();
 	}
+
+	void Renderer::setCamera(const glm::mat4& view, const glm::vec3& cameraPosition)
+	{
+		_cameraData.viewProjectionMatrix = view;
+		_cameraData.position = cameraPosition;
+	}
+
 
 	// Private Function
 

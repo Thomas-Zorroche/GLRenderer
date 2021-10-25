@@ -11,6 +11,10 @@ namespace glrenderer {
 
 		VertexData(const glm::vec3& position, const glm::vec3& normals)
 			: position(position), normals(normals) {}
+		
+		VertexData(const glm::vec3& position)
+			: position(position), normals(glm::vec3()) {}
+
 	};
 
 }

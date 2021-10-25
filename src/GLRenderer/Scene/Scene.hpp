@@ -3,9 +3,11 @@
 #include "entt/entt.hpp"
 #include <string>
 #include <vector>
+#include <memory>
 #include <glm/glm.hpp>
 
 #include "../Shader.h"
+#include "../Lighting/DirectionalLight.hpp"
 
 namespace glrenderer {
 
@@ -17,7 +19,7 @@ namespace glrenderer {
 		Scene();
 		~Scene();
 
-		void onUpdate(const Entity& entitySelected);
+		void onUpdate(const Entity& entitySelected, bool depth = false, unsigned int depthId = 0);
 
 		Entity createEntity(const std::string& label = "");
 
@@ -34,6 +36,16 @@ namespace glrenderer {
 
 		void makeUniqueLabel(std::string& label);
 
+		void setDirectionalLight(const std::shared_ptr<DirectionalLight>& dirLight)
+		{
+			_directionalLight = dirLight;
+		}
+		const std::shared_ptr<DirectionalLight>& getDirectionalLight() const { return _directionalLight; }
+		std::shared_ptr<DirectionalLight> getDirectionalLight() { return _directionalLight; }
+
+		// TEMP
+		glm::mat4 getLightSpaceMatrix();
+
 
 	private:
 		bool isLabelDuplicate(const std::string& name);
@@ -45,5 +57,6 @@ namespace glrenderer {
 
 	private:
 		entt::registry _registry;
+		std::shared_ptr<DirectionalLight> _directionalLight = nullptr;
 	};
 }
