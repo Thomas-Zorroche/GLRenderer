@@ -17,8 +17,10 @@ namespace glrenderer {
 		// TODO member dirLight
 		glm::vec3 lightDirection;
 		glm::mat4 rot;
+		float offset = 0.0f;
 
 		float far_plane = 0.0f;
+		float near_plane = 0.0f;
 
 		auto view = _registry.view<LightComponent>();
 		for (auto& entityId : view)
@@ -29,6 +31,8 @@ namespace glrenderer {
 			if (dirLight)
 			{
 				far_plane = dirLight->getFarPlane();
+				near_plane = dirLight->getNearPlane();
+				offset = dirLight->getOffsetPosition();
 				lightDirection = entity.getComponent<LineComponent>().line->getDirection();
 
 				auto rotation = entity.getComponent<TransformComponent>().rotation;
@@ -42,11 +46,10 @@ namespace glrenderer {
 		}
 
 		glm::mat4 lightView = glm::lookAt(
-			glm::vec3(rot * glm::vec4(lightDirection, 1.0)) * glm::vec3(-1.1), // position
+			glm::vec3(rot * glm::vec4(lightDirection, 1.0)) * glm::vec3(offset), // position
 			glm::vec3(rot * glm::vec4(lightDirection, 1.0)),   // target
 			glm::vec3(0.0f, 1.0f, 0.0f)    // up vector
 		);
-		float near_plane = 1.0f;
 		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
 		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
@@ -173,7 +176,7 @@ namespace glrenderer {
 			if (pointLight)
 			{
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].diffuse", baseLight->getColor());
-				shader->SetUniform3f("pointLights[" + lightIndexStr + "].ambient", { 1.0, 1.0, 1.0 });
+				shader->SetUniform3f("pointLights[" + lightIndexStr + "].ambient", baseLight->getColor());
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].specular", { 1.0, 1.0, 1.0 });
 				shader->SetUniform1f("pointLights[" + lightIndexStr + "].intensity", baseLight->getIntensity());
 
@@ -190,9 +193,14 @@ namespace glrenderer {
 				dirLightUsed = true;
 
 				shader->SetUniform3f("directionalLight.diffuse", baseLight->getColor());
-				shader->SetUniform3f("directionalLight.ambient", { 0.8, 0.8, 0.8 });
+				shader->SetUniform3f("directionalLight.ambient", { 0.5, 0.5, 0.5 });
 				shader->SetUniform3f("directionalLight.specular", { 1.0, 1.0, 1.0 });
 				shader->SetUniform1f("directionalLight.intensity", baseLight->getIntensity());
+				shader->SetUniform1i("directionalLight.softShadow", _directionalLight->getSoftShadow());
+				shader->SetUniform1f("directionalLight.size", _directionalLight->getSize());
+				float frustumSize = 2 * _directionalLight->getNearPlane() * std::tanf(60.0f * 0.5f) * 1.0f;
+				shader->SetUniform1f("directionalLight.frustumSize", _directionalLight->getFrustumSize());
+				shader->SetUniform1f("directionalLight.nearPlane", _directionalLight->getNearPlane());
 
 				auto& line = entity.getComponent<LineComponent>().line;
 				auto rotation = entity.getComponent<TransformComponent>().rotation;
