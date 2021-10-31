@@ -34,7 +34,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 # ////////////////////////// LIBRAIRIES ///////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////
 
-link_directories(${CMAKE_SOURCE_DIR}/lib)
+link_directories(${CMAKE_SOURCE_DIR}/lib ${CMAKE_IMBRIDGE_DIR}/install)
 
 # find the required packages
 if(UNIX)
@@ -61,9 +61,7 @@ endif(WIN32)
 
 add_library(STB_IMAGE "thirdparty/stb_image.cpp")
 add_library(GLAD "thirdparty/glad.c")
-
-set(LIBS ${LIBS} STB_IMAGE)
-set(LIBS ${LIBS} GLAD)
+set(LIBS ${LIBS} STB_IMAGE GLAD ImBridge)
 
 macro(makeLink src dest target)
   add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${src} ${dest}  DEPENDS  ${dest} COMMENT "mklink ${src} -> ${dest}")
@@ -82,7 +80,8 @@ configure_file(src/helpers/RootDir.h src/helpers/RootDir.h)
 include_directories(
   ${CMAKE_BINARY_DIR}/src
   ${CMAKE_SOURCE_DIR}/src
-  ${CMAKE_SOURCE_DIR}/include)
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_IMBRIDGE_DIR}/src/include)
 
 # Grab all the source files
 file(GLOB_RECURSE MY_SOURCES ${CMAKE_SOURCE_DIR}/src/*)
@@ -92,10 +91,9 @@ file(GLOB_RECURSE MY_SHADERS ${CMAKE_SOURCE_DIR}/res/*)
 add_library(${PROJECT_NAME} STATIC ${MY_SOURCES} ${MY_SHADERS})
 # Output path for .lib
 set_property(TARGET ${PROJECT_NAME} PROPERTY ARCHIVE_OUTPUT_DIRECTORY  ${CMAKE_SOURCE_DIR}/install)
-
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD ${CXX_STANDARD})
 
-# define the include dirs
+# define the libs dirs
 MESSAGE(STATUS " ${LIBS}")
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 

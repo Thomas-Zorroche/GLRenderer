@@ -196,11 +196,17 @@ namespace glrenderer {
 				shader->SetUniform3f("directionalLight.ambient", { 0.5, 0.5, 0.5 });
 				shader->SetUniform3f("directionalLight.specular", { 1.0, 1.0, 1.0 });
 				shader->SetUniform1f("directionalLight.intensity", baseLight->getIntensity());
+
 				shader->SetUniform1i("directionalLight.softShadow", _directionalLight->getSoftShadow());
-				shader->SetUniform1f("directionalLight.size", _directionalLight->getSize());
-				float frustumSize = 2 * _directionalLight->getNearPlane() * std::tanf(60.0f * 0.5f) * 1.0f;
-				shader->SetUniform1f("directionalLight.frustumSize", _directionalLight->getFrustumSize());
-				shader->SetUniform1f("directionalLight.nearPlane", _directionalLight->getNearPlane());
+				if (_directionalLight->getSoftShadow())
+				{
+					shader->SetUniform1f("directionalLight.size", _directionalLight->getSize());
+					float frustumSize = 2 * _directionalLight->getNearPlane() * std::tanf(60.0f * 0.5f) * 1.0f; // TODO REMOVE THIS
+					shader->SetUniform1f("directionalLight.frustumSize", _directionalLight->getFrustumSize());
+					shader->SetUniform1f("directionalLight.nearPlane", _directionalLight->getNearPlane());
+					shader->SetUniform1i("blockerSearchDist", 1);
+					shader->SetUniform1i("PCFFilteringDist", 2);
+				}
 
 				auto& line = entity.getComponent<LineComponent>().line;
 				auto rotation = entity.getComponent<TransformComponent>().rotation;

@@ -2,14 +2,17 @@
 
 #include "glm/glm.hpp"
 #include <memory>
+#include <string>
+#include <map>
 
 #include "Shader.h"
 #include "Material.hpp"
 #include "VertexArray.hpp"
 #include "Camera.hpp"
 
-
 namespace glrenderer {
+
+	class ShadowsProperties;
 
 	class Renderer
 	{
@@ -35,6 +38,7 @@ namespace glrenderer {
 		static void setCamera(const std::shared_ptr<Camera>& camera);
 		static void setCamera(const glm::mat4& view, const glm::vec3& cameraPosition);
 
+		static std::shared_ptr<ShadowsProperties> getShadowProperties() { return _shadowProperties; }
 
 	private:
 		static void drawIndexed(const std::shared_ptr<VertexArray>& vertexArray);
@@ -47,8 +51,12 @@ namespace glrenderer {
 		};
 		static CameraData _cameraData;
 
+		static std::shared_ptr<ShadowsProperties> _shadowProperties;
+
 		// TEMP
 		static Material flatMaterial;
 		static Material depthMaterial;
+
+
 	};
 }

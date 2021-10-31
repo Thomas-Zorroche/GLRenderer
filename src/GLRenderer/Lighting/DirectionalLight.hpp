@@ -1,16 +1,15 @@
 ﻿#pragma once
 
 #include "BaseLight.hpp"
-#include <unordered_map>
 
 namespace glrenderer {
 
 	class DirectionalLight : public BaseLight
 	{
 	public:
-		DirectionalLight() {};
+		DirectionalLight();
 
-		~DirectionalLight() = default;
+		~DirectionalLight();
 
 		PointLight* isPointLight() override { return nullptr; }
 		DirectionalLight* isDirectionalLight() override { return this; }
@@ -33,6 +32,7 @@ namespace glrenderer {
 		bool getSoftShadow() const { return _softShadow; }
 		bool& getSoftShadow() { return _softShadow; }
 
+
 	private:
 		float _farPlane = 80.0f;
 		float _nearPlane = 4.5f;
@@ -44,6 +44,5 @@ namespace glrenderer {
 		float _size = 0.015f;
 		
 		float _frustumSize = 27.9f; // TODO replace by formula
-
 	};
 }

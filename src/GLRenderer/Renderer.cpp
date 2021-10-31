@@ -4,14 +4,15 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
+#include "Properties/Render/ShadowsProperties.hpp"
+
 namespace glrenderer
 {
 
 	Renderer::CameraData Renderer::_cameraData;
-
 	Material Renderer::flatMaterial = Material(nullptr);
 	Material Renderer::depthMaterial = Material(nullptr);
-
+	std::shared_ptr<ShadowsProperties> Renderer::_shadowProperties = nullptr;
 
 	void Renderer::init()
 	{
@@ -23,12 +24,12 @@ namespace glrenderer
 		glEnable(GL_STENCIL_TEST);
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
 				
 		setClearColor(glm::vec4(0.15, 0.15, 0.15, 1.0));
 
 		flatMaterial.setShader(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
 		depthMaterial.setShader(std::make_shared<Shader>("res/shaders/Depth.vert", "res/shaders/Depth.frag"));
+		_shadowProperties = std::make_shared<ShadowsProperties>();
 	}
 
 	void Renderer::free()
@@ -75,6 +76,14 @@ namespace glrenderer
 		shader->SetUniform1i("shadowMap", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthId);
+
+		//if (DirLightSoftShadow)
+		//{
+		//	glActiveTexture(GL_TEXTURE1);
+		//	glBindTexture(GL_TEXTURE_1D, _directionalLight->getBlockerSearchDistribution());
+		//	glActiveTexture(GL_TEXTURE2);
+		//	glBindTexture(GL_TEXTURE_1D, _directionalLight->getPCFFilteringDistribution());
+		//}
 
 		vertexArray->bind();
 		drawIndexed(vertexArray);
