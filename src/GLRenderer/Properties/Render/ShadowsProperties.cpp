@@ -18,12 +18,23 @@ namespace glrenderer {
 		updateDistributionTexture(_PCFFilteringSamples, _PCFFilteringDistribution);
 
 		_bridge = std::make_shared<ImBridge::Bridge>();
+		_bridge->addBool(
+			"Soft Shadows",
+			_softShadows,
+			"Use PCSS Alogrithm for Directional Light only."
+		);
 		_bridge->addCombo(
 			"Blocker Search Samples", 
-			"16\0 32\0 64\0 128\0\0", 
+			"16px\0 32px\0 64px\0 128px\0\0", 
 			4, 
 			[this](unsigned int id) {this->onBlockerSearchSamplesUpdate(id); }, 
-			"Adjust Blocker Search Samples (Shadow)");
+			"Adjust blocker search samples.");
+		_bridge->addCombo(
+			"PCF Filtering Samples",
+			"16px\0 32px\0 64px\0 128px\0\0",
+			4,
+			[this](unsigned int id) {this->onBlockerSearchSamplesUpdate(id); },
+			"Adjust PCF filtering samples.");
 	}
 
 	ShadowsProperties::~ShadowsProperties()
@@ -41,6 +52,16 @@ namespace glrenderer {
 		case 1: updateDistributionTexture(32, _blockerSearchDistribution); break;
 		case 2: updateDistributionTexture(64, _blockerSearchDistribution); break;
 		case 3: updateDistributionTexture(128, _blockerSearchDistribution); break;
+		}
+	}
+	void ShadowsProperties::onPCFFilteringSamplesUpdate(unsigned int id)
+	{
+		switch (id)
+		{
+		case 0: updateDistributionTexture(16, _PCFFilteringDistribution); break;
+		case 1: updateDistributionTexture(32, _PCFFilteringDistribution); break;
+		case 2: updateDistributionTexture(64, _PCFFilteringDistribution); break;
+		case 3: updateDistributionTexture(128, _PCFFilteringDistribution); break;
 		}
 	}
 
@@ -91,7 +112,6 @@ namespace glrenderer {
 		}
 
 		std::cout << "Number of points: " << points.size() << std::endl;
-		std::cout << "Attempts: " << attempts << std::endl;
 
 		std::vector<float> data(samples * 2);
 		for (auto i = 0, j = 0; i < samples; i++, j += 2)

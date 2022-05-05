@@ -29,17 +29,11 @@ namespace glrenderer {
 		float getFrustumSize() const { return _frustumSize; }
 		float& getFrustumSize() { return _frustumSize; }
 
-		bool getSoftShadow() const { return _softShadow; }
-		bool& getSoftShadow() { return _softShadow; }
-
-
 	private:
 		float _farPlane = 80.0f;
 		float _nearPlane = 4.5f;
 
 		float _offestPosition = -5.8f;
-
-		bool _softShadow = false;
 
 		float _size = 0.015f;
 		

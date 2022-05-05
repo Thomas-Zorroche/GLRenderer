@@ -23,15 +23,21 @@ namespace glrenderer {
 		void setPCFSamples(uint32_t samples);
 		unsigned int getPCFFilteringDistribution() const;
 
+		bool& getSoftShadows() { return _softShadows; }
+		bool getSoftShadows() const { return _softShadows; }
+
 	public:
 		const std::shared_ptr<ImBridge::Bridge>& getBridge() { return _bridge; }
 		void onBlockerSearchSamplesUpdate(unsigned int id);
+		void onPCFFilteringSamplesUpdate(unsigned int id);
 
 	private:
 		void updateDistributionTexture(uint32_t samples, unsigned int  texture);
 		
 	private:
 		std::shared_ptr<ImBridge::Bridge> _bridge;
+
+		bool _softShadows = false;
 
 		// PCSS Settings
 		unsigned int _blockerSearchDistribution = 0; // Textures

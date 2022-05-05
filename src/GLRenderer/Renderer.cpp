@@ -68,22 +68,28 @@ namespace glrenderer
 			glStencilMask(0x00);
 		}
 
+		// RENDER UNIFORMS
 		shader->Bind();
 		shader->SetUniformMatrix4fv("uModelMatrix", transform);
 		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 		shader->SetUniform3f("uCameraPos", _cameraData.position);
+		shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows());
 		
 		shader->SetUniform1i("shadowMap", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthId);
 
-		//if (DirLightSoftShadow)
-		//{
-		//	glActiveTexture(GL_TEXTURE1);
-		//	glBindTexture(GL_TEXTURE_1D, _directionalLight->getBlockerSearchDistribution());
-		//	glActiveTexture(GL_TEXTURE2);
-		//	glBindTexture(GL_TEXTURE_1D, _directionalLight->getPCFFilteringDistribution());
-		//}
+		if (_shadowProperties->getSoftShadows())
+		{
+			shader->SetUniform1i("uBlockerSearchDist", 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_1D, _shadowProperties->getBlockerSearchDistribution());
+			shader->SetUniform1i("uPCFFilteringDist", 2);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_1D, _shadowProperties->getPCFFilteringDistribution());
+			shader->SetUniform1i("uBlockerSearchSamples", _shadowProperties->getBlockerSearchSamples());
+			shader->SetUniform1i("uPCFFilteringSamples", _shadowProperties->getPCFSamples());
+		}
 
 		vertexArray->bind();
 		drawIndexed(vertexArray);
