@@ -19,7 +19,10 @@ namespace glrenderer {
 		Scene();
 		~Scene();
 
-		void onUpdate(const Entity& entitySelected, bool depth = false, unsigned int depthId = 0);
+		void renderScene(const std::shared_ptr<class Camera>& camera, const Entity& entitySelected);
+
+		void computeDepthPass();
+		void computeRenderPass(const std::shared_ptr<class Camera>& camera, const Entity& entitySelected);
 
 		Entity createEntity(const std::string& label = "");
 

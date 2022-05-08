@@ -11,6 +11,9 @@
 #include "GLRenderer/Lighting/PointLight.hpp"
 #include "GLRenderer/Lighting/DirectionalLight.hpp"
 
+#include "../Framebuffer.hpp"
+#include "../Camera.hpp"
+
 namespace glrenderer {
 
 	glm::mat4 Scene::getLightSpaceMatrix()
@@ -68,21 +71,48 @@ namespace glrenderer {
 
 	}
 
-	void Scene::onUpdate(const Entity& entitySelected, bool depth, unsigned int depthId)
+	void Scene::renderScene(const std::shared_ptr<Camera>& camera, const Entity& entitySelected)
 	{
-		// Render Mesh
+		switch (Renderer::getRendererType())
+		{
+		case ERendererType::FORWARD:
+			computeDepthPass();
+			computeRenderPass(camera, entitySelected);
+			break;
+		case ERendererType::DEFERRED:
+			break;
+		}
+	}
+
+	void Scene::computeDepthPass()
+	{
+		Renderer::getShadowMap()->bind(); // TODO replace 1024 by variable
+		Renderer::clear();
+
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (const auto entity : group)
 		{
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
 
 			// Depth rendering (shadow mapping)
-			if (depth)
-			{
-				Renderer::drawDepth(mesh.mesh->getVertexArray(), transform.getModelMatrix(),
-					getLightSpaceMatrix());
-				continue;
-			}
+			Renderer::drawDepth(mesh.mesh->getVertexArray(), transform.getModelMatrix(), getLightSpaceMatrix());
+		}
+
+		Renderer::getShadowMap()->unbind();
+	}
+
+	void Scene::computeRenderPass(const std::shared_ptr<Camera>& camera, const Entity& entitySelected)
+	{
+		Renderer::getRenderBuffer()->bind();
+		Renderer::setCamera(camera);
+		
+		Renderer::clear();
+
+		// Render Mesh
+		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
+		for (const auto entity : group)
+		{
+			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
 
 			// Main rendering
 			auto& shader = mesh.mesh->getMaterial()->getShader();
@@ -93,21 +123,20 @@ namespace glrenderer {
 			shader->SetUniformMatrix4fv("uLightSpaceMatrix", lightSpaceMatrix);
 
 			sendLightingUniforms(shader);
-			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(), 
-				entitySelected == entity, depthId);
+			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(),
+				entitySelected == entity, Renderer::getShadowMap()->getTextureId());
 		}
 
 		// Render Lines
-		if (!depth)
+		auto group2 = _registry.group<LineComponent>(entt::get<TransformComponent>);
+		for (const auto entity : group2)
 		{
-			auto group2 = _registry.group<LineComponent>(entt::get<TransformComponent>);
-			for (const auto entity : group2)
-			{
-				auto [transform, line] = group2.get<TransformComponent, LineComponent>(entity);
+			auto [transform, line] = group2.get<TransformComponent, LineComponent>(entity);
 
-				Renderer::drawLine(line.line->getVertexArray(), transform.getModelMatrix(), entitySelected == entity);
-			}
+			Renderer::drawLine(line.line->getVertexArray(), transform.getModelMatrix(), entitySelected == entity);
 		}
+
+		Renderer::getRenderBuffer()->unbind();
 	}
 
 	Entity Scene::createEntity(const std::string& name)

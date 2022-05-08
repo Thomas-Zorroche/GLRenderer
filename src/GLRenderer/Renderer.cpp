@@ -6,6 +6,8 @@
 
 #include "Properties/Render/ShadowsProperties.hpp"
 
+#include "Framebuffer.hpp"
+
 namespace glrenderer
 {
 
@@ -13,6 +15,11 @@ namespace glrenderer
 	Material Renderer::flatMaterial = Material(nullptr);
 	Material Renderer::depthMaterial = Material(nullptr);
 	std::shared_ptr<ShadowsProperties> Renderer::_shadowProperties = nullptr;
+
+	std::unique_ptr<Framebuffer> Renderer::_shadowMap = nullptr;
+	std::unique_ptr<Framebuffer> Renderer::_renderBuffer = nullptr;
+	ERendererType Renderer::_rendererType = ERendererType::FORWARD;
+
 
 	void Renderer::init()
 	{
@@ -30,11 +37,15 @@ namespace glrenderer
 		flatMaterial.setShader(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
 		depthMaterial.setShader(std::make_shared<Shader>("res/shaders/Depth.vert", "res/shaders/Depth.frag"));
 		_shadowProperties = std::make_shared<ShadowsProperties>();
+
+		_renderBuffer = Framebuffer::createRenderingBuffer(64, 64); // used for main rendering (viewport)
+		_shadowMap = Framebuffer::createDepthBuffer(1024, 1024);     // used for shadow mapping
 	}
 
 	void Renderer::free()
 	{
-
+		_renderBuffer->free();
+		_shadowMap->free();
 	}
 
 	void Renderer::drawDepth(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform,
@@ -73,14 +84,14 @@ namespace glrenderer
 		shader->SetUniformMatrix4fv("uModelMatrix", transform);
 		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 		shader->SetUniform3f("uCameraPos", _cameraData.position);
-		shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows());
+		shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows() ? 1 : 0);
 		
 		shader->SetUniform1i("shadowMap", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthId);
 
-		if (_shadowProperties->getSoftShadows())
-		{
+		//if (_shadowProperties->getSoftShadows())
+		//{
 			shader->SetUniform1i("uBlockerSearchDist", 1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_1D, _shadowProperties->getBlockerSearchDistribution());
@@ -89,7 +100,7 @@ namespace glrenderer
 			glBindTexture(GL_TEXTURE_1D, _shadowProperties->getPCFFilteringDistribution());
 			shader->SetUniform1i("uBlockerSearchSamples", _shadowProperties->getBlockerSearchSamples());
 			shader->SetUniform1i("uPCFFilteringSamples", _shadowProperties->getPCFSamples());
-		}
+		//}
 
 		vertexArray->bind();
 		drawIndexed(vertexArray);

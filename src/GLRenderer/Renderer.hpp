@@ -14,6 +14,12 @@ namespace glrenderer {
 
 	class ShadowsProperties;
 
+	enum class ERendererType
+	{
+		FORWARD,
+		DEFERRED
+	};
+
 	class Renderer
 	{
 	public:
@@ -40,6 +46,11 @@ namespace glrenderer {
 
 		static std::shared_ptr<ShadowsProperties> getShadowProperties() { return _shadowProperties; }
 
+		static ERendererType getRendererType() { return _rendererType; }
+
+		static std::unique_ptr<class Framebuffer>& getShadowMap() { return _shadowMap; }
+		static std::unique_ptr<class Framebuffer>& getRenderBuffer() { return _renderBuffer; }
+
 	private:
 		static void drawIndexed(const std::shared_ptr<VertexArray>& vertexArray);
 
@@ -53,10 +64,13 @@ namespace glrenderer {
 
 		static std::shared_ptr<ShadowsProperties> _shadowProperties;
 
+		static std::unique_ptr<class Framebuffer> _shadowMap;
+		static std::unique_ptr<class Framebuffer> _renderBuffer;
+
 		// TEMP
 		static Material flatMaterial;
 		static Material depthMaterial;
 
-
+		static ERendererType _rendererType;
 	};
 }
