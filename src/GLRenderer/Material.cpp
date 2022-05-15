@@ -1,6 +1,8 @@
 ﻿#include "Material.hpp"
 #include "Math/Math.hpp"
 
+#include "glad/glad.h"
+
 // TEMP
 #include <iostream>
 
@@ -16,9 +18,15 @@ namespace glrenderer {
 		}
 	}
 
-	void Material::bind()
+	void Material::bind() const
 	{
 		_shader->Bind();
+
+		if (_baseColorTexture >= 0)
+		{
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, _baseColorTexture);
+		}
 	}
 
 	void Material::unbind()
@@ -41,5 +49,13 @@ namespace glrenderer {
 		_shader->SetUniform1f("uShininess", _shininess);
 	}
 
+	void Material::setBaseColorTexture(int texture, const glm::vec4& baseColorFactor)
+	{
+		bind();
+
+		_baseColorTexture = texture;
+		_shader->SetUniform1i("uBaseColorTexture", 3);
+		_shader->SetUniform4f("uBaseColorFactor", baseColorFactor);
+	}
 
 }

@@ -80,7 +80,6 @@ namespace glrenderer
 		}
 
 		// RENDER UNIFORMS
-		shader->Bind();
 		shader->SetUniformMatrix4fv("uModelMatrix", transform);
 		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 		shader->SetUniform3f("uCameraPos", _cameraData.position);

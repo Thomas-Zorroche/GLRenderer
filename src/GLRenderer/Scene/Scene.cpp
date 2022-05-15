@@ -116,9 +116,9 @@ namespace glrenderer {
 		{
 			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
 
-			// Main rendering
-			auto& shader = mesh.mesh->getMaterial()->getShader();
-			shader->Bind();
+			const std::shared_ptr<Material>& material = mesh.mesh->getMaterial();
+			const std::shared_ptr<Shader>& shader = material->getShader();
+			material->bind();
 
 			// TODO Optimize this
 			glm::mat4 lightSpaceMatrix = getLightSpaceMatrix();

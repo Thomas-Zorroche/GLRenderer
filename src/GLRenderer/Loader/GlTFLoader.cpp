@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+using namespace glrenderer;
+
 namespace glTFLoader
 {
     int loadFile(const std::string& filePath, tinygltf::Model& model)
@@ -38,7 +40,7 @@ namespace glTFLoader
         return true;
 	}
 
-    void createMeshes(tinygltf::Model& model, std::vector<std::shared_ptr<glrenderer::Mesh>>& meshes)
+    void createMeshes(tinygltf::Model& model, std::vector<std::shared_ptr<Mesh>>& meshes)
     {
         const GLuint VERTEX_ATTRIB_POSITION_IDX = 0;
         const GLuint VERTEX_ATTRIB_NORMAL_IDX = 1;
@@ -54,9 +56,15 @@ namespace glTFLoader
         std::vector<unsigned short> indicesBuffer;
 
         // GLRenderer mesh data
-        std::vector<glrenderer::VertexData> vertices;
+        std::vector<VertexData> vertices;
         std::vector<uint32_t> indices;
-        std::shared_ptr<glrenderer::Material> material = nullptr;
+        std::shared_ptr<Material> material = nullptr;
+
+        tinygltf::Sampler defaultSampler;
+        defaultSampler.minFilter = GL_LINEAR;
+        defaultSampler.magFilter = GL_LINEAR;
+        defaultSampler.wrapS = GL_REPEAT;
+        defaultSampler.wrapT = GL_REPEAT;
 
         size_t meshesCount = model.meshes.size();
         for (int index_mesh = 0; index_mesh < meshesCount; index_mesh++)
@@ -82,17 +90,82 @@ namespace glTFLoader
                 // Retrieve indices
                 if (model.meshes[index_mesh].primitives[index_primitive].indices >= 0)
                 {
-                    tinygltf::Accessor indicesAccessor = model.accessors[model.meshes[index_mesh].primitives[index_primitive].indices];
-                    int indicesBufferID = model.bufferViews[indicesAccessor.bufferView].buffer;
                     getTinyGlTFBuffer(model, index_mesh, index_primitive, "INDICES", indicesBuffer);
+                    buildIndicesFromTinyGlTFBuffer(indicesBuffer, indices);
                 }
 
                 buildVertexDataFromTinyGlTFBuffer(positionBuffer, normalBuffer, texcoordsBuffer, vertices);
-                buildIndicesFromTinyGlTFBuffer(indicesBuffer, indices);
 
-                // TODO create material
+                // Create material
+                int materialID = model.meshes[index_mesh].primitives[index_primitive].material;
+                if (materialID > 0)
+                {
+                    const tinygltf::Material& baseMaterial = model.materials[materialID];
+                    const tinygltf::PbrMetallicRoughness& pbrMaterial = baseMaterial.pbrMetallicRoughness;
 
-                auto mesh = std::make_shared<glrenderer::Mesh>(vertices, indices, material);
+                    // Base Color
+                    if (pbrMaterial.baseColorTexture.index >= 0)
+                    {
+                        const auto& textureColor = model.textures[pbrMaterial.baseColorTexture.index];
+                        if (textureColor.source >= 0)
+                        {
+                            // Create Texture
+                            unsigned int textureID = 0;
+                            glGenTextures(1, &textureID);
+
+                            const auto& image = model.images[textureColor.source]; // get the image
+                            const auto& sampler = textureColor.sampler >= 0 ? model.samplers[textureColor.sampler] : defaultSampler;
+
+                            // fill the texture object with the data from the image
+                            glBindTexture(GL_TEXTURE_2D, textureID);
+                            {
+                                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, image.pixel_type, image.image.data());
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampler.minFilter != -1 ? sampler.minFilter : GL_LINEAR);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampler.magFilter != -1 ? sampler.magFilter : GL_LINEAR);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sampler.wrapS);
+                                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, sampler.wrapT);
+
+                                // Filters
+                                if (sampler.minFilter == GL_NEAREST_MIPMAP_NEAREST ||
+                                    sampler.minFilter == GL_NEAREST_MIPMAP_LINEAR ||
+                                    sampler.minFilter == GL_LINEAR_MIPMAP_NEAREST ||
+                                    sampler.minFilter == GL_LINEAR_MIPMAP_LINEAR) {
+                                    glGenerateMipmap(GL_TEXTURE_2D);
+                                }
+                            }
+                            glBindTexture(GL_TEXTURE_2D, 0);
+
+
+                            auto shader = std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/LightingTextured.frag");
+                            material = std::make_shared<Material>(shader);
+                            material->setBaseColorTexture(textureID);
+                        }
+                    }
+                    else
+                    {
+                        // Create white texture
+                        GLuint pinkTexture;
+                        float pink[] = { 1, 0, 1, 1 };
+                        glGenTextures(1, &pinkTexture);
+                        glBindTexture(GL_TEXTURE_2D, pinkTexture);
+                        {
+                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_FLOAT, pink);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+                        }
+                        glBindTexture(GL_TEXTURE_2D, 0);
+
+                        auto shader = std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/LightingTextured.frag");
+                        material = std::make_shared<Material>(shader);
+                        material->setBaseColorTexture(pinkTexture);
+                    }
+                }
+
+
+                auto mesh = std::make_shared<Mesh>(vertices, indices, material);
                 meshes.push_back(mesh);
             }
         }
@@ -195,18 +268,16 @@ namespace glTFLoader
     }
 
     void buildVertexDataFromTinyGlTFBuffer(const std::vector<float>& position, const std::vector<float>& normals, 
-        const std::vector<float>& texcoords, std::vector<glrenderer::VertexData>& vertices)
+        const std::vector<float>& texcoords, std::vector<VertexData>& vertices)
     {
         uint32_t vertexCount = 0;
-        uint32_t texcoordsIndex = 0; // TEMP
         vertices.resize(position.size() / 3);
-        for (size_t i = 0; i + 2 < position.size(); i+=3)
+        for (size_t vindex = 0, texindex = 0; vindex + 2 < position.size(); vindex +=3, texindex += 2)
         {
             vertices[vertexCount] = {
-                glm::vec3(position[i], position[i + 1], position[i + 2]),
-                glm::vec3(normals[i], normals[i + 1], normals[i + 2]),
-                //glm::vec2(texcoords[texcoordsIndex++], texcoords[texcoordsIndex++]),
-                glm::vec2(0, 0)
+                glm::vec3(position[vindex], position[vindex + 1], position[vindex + 2]),
+                glm::vec3(normals[vindex], normals[vindex + 1], normals[vindex + 2]),
+                glm::vec2(texcoords[texindex], texcoords[texindex + 1]),
             };
             vertexCount++;
         }

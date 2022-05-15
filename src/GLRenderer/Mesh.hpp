@@ -25,6 +25,7 @@ namespace glrenderer {
 		const std::shared_ptr<VertexArray>& getVertexArray() const { return _VAO; }
 		
 		std::shared_ptr<Material>& getMaterial() { return _material; }
+		const std::shared_ptr<Material>& getMaterial() const { return _material; }
 
 		static std::shared_ptr<Mesh> createMesh(MeshShape mesh);
 
