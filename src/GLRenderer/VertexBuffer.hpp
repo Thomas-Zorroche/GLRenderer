@@ -16,6 +16,13 @@ namespace glrenderer {
 		uint32_t offset = 0;
 
 		BufferAttribute() = default;
+
+		BufferAttribute(uint32_t count)
+		{
+			componentCount = count;
+			size = count * 4;
+			offset = 0;
+		}
 	};
 
 	class BufferLayout
@@ -56,8 +63,11 @@ namespace glrenderer {
 		const BufferLayout& getLayout() const { return _layout; }
 		void setLayout(const BufferLayout& layout) { _layout = layout; }
 
+		uint32_t getVertexCount() const { return _vertexCount; }
+
 	private:
 		uint32_t _id;
 		BufferLayout _layout;
+		uint32_t _vertexCount = 0;
 	};
 }

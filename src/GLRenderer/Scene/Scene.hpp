@@ -24,6 +24,8 @@ namespace glrenderer {
 		void computeDepthPass();
 		void computeRenderPass(const std::shared_ptr<class Camera>& camera, const Entity& entitySelected);
 
+		bool importModel(const std::string& modelPath);
+
 		Entity createEntity(const std::string& label = "");
 
 		template <typename Function>

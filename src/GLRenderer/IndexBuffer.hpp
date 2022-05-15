@@ -16,10 +16,8 @@ namespace glrenderer {
 
 		uint32_t getCount() const { return _count; }
 
-
 	private:
 		uint32_t _id;
 		uint32_t _count;
-
 	};
 }

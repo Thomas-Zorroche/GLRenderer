@@ -52,7 +52,7 @@ namespace glrenderer {
 		static std::unique_ptr<class Framebuffer>& getRenderBuffer() { return _renderBuffer; }
 
 	private:
-		static void drawIndexed(const std::shared_ptr<VertexArray>& vertexArray);
+		static void draw(const std::shared_ptr<VertexArray>& vertexArray);
 
 	private:
 		struct CameraData

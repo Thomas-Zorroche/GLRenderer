@@ -61,7 +61,7 @@ namespace glrenderer
 
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_FRONT);
-		drawIndexed(vertexArray);
+		draw(vertexArray);
 		//glCullFace(GL_BACK); 
 		//glDisable(GL_CULL_FACE);
 	}
@@ -103,7 +103,7 @@ namespace glrenderer
 		//}
 
 		vertexArray->bind();
-		drawIndexed(vertexArray);
+		draw(vertexArray);
 
 		if (selected)
 		{
@@ -118,7 +118,7 @@ namespace glrenderer
 			entitySelectedShader->SetUniformMatrix4fv("uModelMatrix", glm::scale(transform, glm::vec3(1.02f)));
 			entitySelectedShader->SetUniform3f("uColor", glm::vec3(0.0f, 0.95f, 0.40f));
 
-			drawIndexed(vertexArray);
+			draw(vertexArray);
 
 			glStencilMask(0xFF);
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -173,11 +173,17 @@ namespace glrenderer
 
 	// Private Function
 
-	void Renderer::drawIndexed(const std::shared_ptr<VertexArray>& vertexArray)
+	void Renderer::draw(const std::shared_ptr<VertexArray>& vertexArray)
 	{
-		uint32_t count = vertexArray->getIndexBuffer() ? vertexArray->getIndexBuffer()->getCount() : 0;
+		if (vertexArray->getIndexBuffer())
+		{
+			glDrawElements(GL_TRIANGLES, vertexArray->getIndexBuffer()->getCount(), GL_UNSIGNED_INT, 0);
+		}
+		else
+		{
+			glDrawArrays(GL_TRIANGLES, 0, vertexArray->getVertexCount());
+		}
 
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
 		//glBindTexture(GL_TEXTURE_2D, 0);
 	}
 

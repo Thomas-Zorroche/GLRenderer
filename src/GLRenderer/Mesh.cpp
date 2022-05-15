@@ -30,16 +30,20 @@ namespace glrenderer {
 		const auto& VBO = std::make_shared<VertexBuffer>(vertices);
 		glrenderer::BufferLayout layout = {
 			{
-				glrenderer::BufferAttribute(), // position
-				glrenderer::BufferAttribute()  // normals
+				glrenderer::BufferAttribute(3),  // position
+				glrenderer::BufferAttribute(3),  // normals
+				glrenderer::BufferAttribute(2),  // texcoords
 			} 
 		};
 		VBO->setLayout(layout);
 		_VAO->setVertexBuffer(VBO);
 
 		// Index Buffer
-		auto IBO = std::make_shared<glrenderer::IndexBuffer>(indices, indices.size());
-		_VAO->setIndexBuffer(IBO);
+		if (!indices.empty())
+		{
+			auto IBO = std::make_shared<glrenderer::IndexBuffer>(indices, indices.size());
+			_VAO->setIndexBuffer(IBO);
+		}
 	}
 
 	std::shared_ptr<Mesh> Mesh::createMesh(MeshShape mesh)

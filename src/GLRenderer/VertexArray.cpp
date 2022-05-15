@@ -28,6 +28,8 @@ namespace glrenderer {
 
 	void VertexArray::setVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
 	{
+		_vertexCount = vertexBuffer->getVertexCount();
+
 		glBindVertexArray(_id);
 		
 		// Bind vertex buffer

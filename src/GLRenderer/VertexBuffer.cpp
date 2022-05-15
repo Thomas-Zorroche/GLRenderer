@@ -12,6 +12,8 @@ namespace glrenderer {
 		
 		glBindBuffer(GL_ARRAY_BUFFER, _id);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), &vertices[0], GL_STATIC_DRAW);
+
+		_vertexCount = vertices.size();
 	}
 
 	VertexBuffer::~VertexBuffer()

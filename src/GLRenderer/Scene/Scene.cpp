@@ -1,7 +1,7 @@
 ﻿#include "Scene.hpp"
 #include "Component.hpp"
 #include "../Renderer.hpp"
-
+#include "../Mesh.hpp"
 #include "Entity.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
@@ -13,6 +13,8 @@
 
 #include "../Framebuffer.hpp"
 #include "../Camera.hpp"
+
+#include "../Loader/GlTFLoader.hpp"
 
 namespace glrenderer {
 
@@ -137,6 +139,30 @@ namespace glrenderer {
 		}
 
 		Renderer::getRenderBuffer()->unbind();
+	}
+
+	bool Scene::importModel(const std::string& modelPath)
+	{
+		// ATM, import only gltf
+		tinygltf::Model model;
+		if (!glTFLoader::loadFile(modelPath, model))
+			return false;
+
+		// create meshes
+		std::vector<std::shared_ptr<Mesh>> meshes;
+		glTFLoader::createMeshes(model, meshes);
+
+		// create entities
+		for (const auto& mesh : meshes)
+		{
+			auto& meshEntity = createEntity("Mesh");
+			meshEntity.addComponent<glrenderer::MeshComponent>(mesh);
+			auto& transform = meshEntity.getComponent<glrenderer::TransformComponent>();
+			static float import_scale = 0.08f;
+			transform.scale = glm::vec3(import_scale, import_scale, import_scale);
+		}
+
+		return true;
 	}
 
 	Entity Scene::createEntity(const std::string& name)
