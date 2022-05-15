@@ -216,15 +216,16 @@ namespace glrenderer {
 	void Scene::sendLightingUniforms(const std::shared_ptr<Shader>& shader)
 	{
 		auto viewLight = _registry.view<LightComponent>();
-		uint32_t lightIndex = 0;
-		std::string lightIndexStr = std::to_string(lightIndex);
 
 		// TEMP
 		// Only one directional light can be used
 		bool dirLightUsed = false;
 
+		uint32_t lightIndex = 0;
 		for (auto entityLight : viewLight)
 		{
+			std::string lightIndexStr = std::to_string(lightIndex);
+
 			Entity entity = { entityLight, this };
 			std::shared_ptr<BaseLight>& baseLight = entity.getComponent<LightComponent>().light;
 
@@ -240,6 +241,8 @@ namespace glrenderer {
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].position", position);
 				shader->SetUniform1f("pointLights[" + lightIndexStr + "].linear", pointLight->getLinear());
 				shader->SetUniform1f("pointLights[" + lightIndexStr + "].quadratic", pointLight->getQuadratic());
+
+				++lightIndex;
 				continue;
 			}
 
@@ -269,11 +272,11 @@ namespace glrenderer {
 				rot = glm::rotate(rot, glm::radians(rotation.x), glm::vec3(1, 0, 0));
 
 				shader->SetUniform3f("directionalLight.direction", rot * glm::vec4(line->getDirection(), 1.0f));
+
+				++lightIndex;
 				continue;
 			}
 
-			lightIndex++;
-			lightIndexStr = std::to_string(lightIndex);
 		}
 	}
 
