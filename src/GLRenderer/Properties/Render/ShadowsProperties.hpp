@@ -26,6 +26,8 @@ namespace glrenderer {
 		bool& getSoftShadows() { return _softShadows; }
 		bool getSoftShadows() const { return _softShadows; }
 
+		bool getComputeShadows() const { return _computeShadows; }
+
 	public:
 		const std::shared_ptr<ImBridge::Bridge>& getBridge() { return _bridge; }
 		void onBlockerSearchSamplesUpdate(unsigned int id);
@@ -36,6 +38,8 @@ namespace glrenderer {
 		
 	private:
 		std::shared_ptr<ImBridge::Bridge> _bridge;
+
+		bool _computeShadows = false;
 
 		bool _softShadows = false;
 

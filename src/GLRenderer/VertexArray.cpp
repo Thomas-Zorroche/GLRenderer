@@ -13,7 +13,7 @@ namespace glrenderer {
 	VertexArray::~VertexArray()
 	{
 		glDeleteVertexArrays(1, &_id);
-		std::cout << "VAO deleted" << std::endl;
+		//std::cout << "VAO deleted" << std::endl;
 	}
 
 	void VertexArray::bind()

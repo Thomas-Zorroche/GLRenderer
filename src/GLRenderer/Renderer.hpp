@@ -9,6 +9,7 @@
 #include "Material.hpp"
 #include "VertexArray.hpp"
 #include "Camera.hpp"
+#include "Lighting/PointLight.hpp"
 
 namespace glrenderer {
 
@@ -51,6 +52,12 @@ namespace glrenderer {
 		static std::unique_ptr<class Framebuffer>& getShadowMap() { return _shadowMap; }
 		static std::unique_ptr<class Framebuffer>& getRenderBuffer() { return _renderBuffer; }
 
+		static int getMaxNumTotalLights() { return MAX_NUM_TOTAL_LIGHTS; }
+
+		// TEMP
+		static void updateLights(const std::vector<Glsl_PointLight>& lights);
+
+
 	private:
 		static void draw(const std::shared_ptr<VertexArray>& vertexArray);
 
@@ -70,7 +77,11 @@ namespace glrenderer {
 		// TEMP
 		static Material flatMaterial;
 		static Material depthMaterial;
+		static unsigned int uboLights;
+
 
 		static ERendererType _rendererType;
+
+		static const int MAX_NUM_TOTAL_LIGHTS;
 	};
 }

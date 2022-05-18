@@ -19,7 +19,7 @@ namespace glrenderer {
 	VertexBuffer::~VertexBuffer()
 	{
 		glDeleteBuffers(1, &_id);
-		std::cout << "VBO deleted" << std::endl;
+		//std::cout << "VBO deleted" << std::endl;
 	}
 
 	void VertexBuffer::bind()

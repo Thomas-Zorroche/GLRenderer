@@ -8,13 +8,15 @@
 #include "../Properties/Render/ShadowsProperties.hpp"
 
 // TEMP
-#include "GLRenderer/Lighting/PointLight.hpp"
 #include "GLRenderer/Lighting/DirectionalLight.hpp"
 
 #include "../Framebuffer.hpp"
 #include "../Camera.hpp"
 
 #include "../Loader/GlTFLoader.hpp"
+
+#include <random>
+
 
 namespace glrenderer {
 
@@ -73,12 +75,75 @@ namespace glrenderer {
 
 	}
 
+	void Scene::createLights(size_t numLights)
+	{
+		if (_pointLights.size() + numLights > Renderer::getMaxNumTotalLights())
+		{
+			std::cout << "Cannot exceed " << Renderer::getMaxNumTotalLights() << " point lights.\n";
+			return;
+		}
+		
+		size_t oldSize = _pointLights.size();
+		size_t newSize = oldSize + numLights;
+		_pointLights.resize(newSize);
+
+		// Lights
+		std::random_device randomDevice;
+		std::mt19937 generator(randomDevice());
+		std::uniform_real_distribution<float>distributionX(-100.0f, 100.0f);
+		std::uniform_real_distribution<float> distributionZ(-40.0f, 40.0f);
+		std::uniform_real_distribution<float> distributionColor(0.0f, 1.0f);
+
+		for (size_t i = oldSize; i < newSize; i++)
+		{
+			auto pointLight = std::make_shared<PointLight>();
+
+			// random color
+			glm::vec3& color = pointLight->getColor();
+			color.r = distributionColor(generator);
+			color.g = distributionColor(generator);
+			color.b = distributionColor(generator);
+
+			_pointLights[i] = {
+				{ distributionX(generator), 0.7f, distributionZ(generator) },
+				pointLight->getIntensity(),
+				glm::vec3(0, 0, 0),
+				pointLight->getLinear(),
+				pointLight->getColor(),
+				pointLight->getQuadratic(),
+				glm::vec4(pointLight->getColor(), 0.0f)
+			};
+		}
+
+		Renderer::updateLights(_pointLights);
+	}
+
+	void Scene::updatePointLights(size_t pointLightsNum)
+	{
+		int pointLightsNumDelta = _pointLights.size() - pointLightsNum;
+		
+		// Remove lights
+		if (pointLightsNumDelta > 0)
+		{
+			for (size_t i = 0; i < pointLightsNumDelta; i++)
+			{
+				_pointLights.pop_back();
+			}
+			Renderer::updateLights(_pointLights);
+		}
+		// Add lights
+		else if (pointLightsNumDelta < 0)
+		{
+			createLights(std::abs(pointLightsNumDelta));
+		}
+	}
+
 	void Scene::renderScene(const std::shared_ptr<Camera>& camera, const Entity& entitySelected)
 	{
 		switch (Renderer::getRendererType())
 		{
 		case ERendererType::FORWARD:
-			computeDepthPass();
+			//computeDepthPass();
 			computeRenderPass(camera, entitySelected);
 			break;
 		case ERendererType::DEFERRED:
@@ -111,6 +176,7 @@ namespace glrenderer {
 		Renderer::clear();
 
 		// Render Mesh
+		static bool done = false;
 		auto group = _registry.group<TransformComponent>(entt::get<MeshComponent>);
 		for (const auto entity : group)
 		{
@@ -121,13 +187,25 @@ namespace glrenderer {
 			material->bind();
 
 			// TODO Optimize this
-			glm::mat4 lightSpaceMatrix = getLightSpaceMatrix();
-			shader->SetUniformMatrix4fv("uLightSpaceMatrix", lightSpaceMatrix);
+			if (Renderer::getShadowProperties()->getComputeShadows())
+			{
+				glm::mat4 lightSpaceMatrix = getLightSpaceMatrix();
+				shader->SetUniformMatrix4fv("uLightSpaceMatrix", lightSpaceMatrix);
+			}
+				
+			if (!done)
+			{
+				//sendLightingUniforms(shader);
+			}
 
-			sendLightingUniforms(shader);
+			shader->SetUniform1i("uNumPointLights", _pointLights.size());
+
 			Renderer::draw(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(),
 				entitySelected == entity, Renderer::getShadowMap()->getTextureId());
 		}
+
+		done = true;
+
 
 		// Render Lines
 		auto group2 = _registry.group<LineComponent>(entt::get<TransformComponent>);
@@ -224,6 +302,9 @@ namespace glrenderer {
 		uint32_t lightIndex = 0;
 		for (auto entityLight : viewLight)
 		{
+			//if (lightIndex > 7)
+			//	return;
+
 			std::string lightIndexStr = std::to_string(lightIndex);
 
 			Entity entity = { entityLight, this };
@@ -232,6 +313,9 @@ namespace glrenderer {
 			PointLight* pointLight = baseLight->isPointLight();
 			if (pointLight)
 			{
+				//if (lightIndex > 7)
+				//	continue;
+
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].diffuse", baseLight->getColor());
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].ambient", baseLight->getColor());
 				shader->SetUniform3f("pointLights[" + lightIndexStr + "].specular", { 1.0, 1.0, 1.0 });

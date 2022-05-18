@@ -17,7 +17,7 @@ namespace glrenderer {
 	IndexBuffer::~IndexBuffer()
 	{
 		glDeleteBuffers(1, &_id);
-		std::cout << "IBO deleted" << std::endl;
+		//std::cout << "IBO deleted" << std::endl;
 	}
 
 	void IndexBuffer::bind()

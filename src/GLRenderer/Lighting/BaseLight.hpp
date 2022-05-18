@@ -32,7 +32,7 @@ namespace glrenderer {
 		const float& getIntensity() const { return _intensity; }
 		float& getIntensity() { return _intensity; }
 
-	private:
+	protected:
 		glm::vec3 _color;
 		float _intensity;
 	};

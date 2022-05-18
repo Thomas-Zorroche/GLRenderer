@@ -15,6 +15,10 @@ namespace glrenderer {
 		{
 			updateDiffuse();
 			updateRoughness();
+
+			// Set UBO binding
+			unsigned int uniformBlockIndex = glGetUniformBlockIndex(_shader->getID(), "Lights");
+			glUniformBlockBinding(_shader->getID(), uniformBlockIndex, 0);
 		}
 	}
 
@@ -38,7 +42,8 @@ namespace glrenderer {
 	void Material::updateDiffuse()
 	{
 		bind();
-		_shader->SetUniform3f("uColor", _diffuse);
+		// TEMP
+		//_shader->SetUniform3f("uColor", _diffuse);
 	}
 
 	void Material::updateRoughness()

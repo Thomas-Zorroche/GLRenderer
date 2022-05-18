@@ -5,6 +5,20 @@
 
 namespace glrenderer {
 
+	struct Glsl_PointLight
+	{
+		glm::vec3 position;
+		float intensity;
+
+		glm::vec3 ambient;
+		float linear;
+
+		glm::vec3 diffuse;
+		float quadratic;
+
+		glm::vec4 specular;
+	};
+
 	class PointLight : public BaseLight
 	{
 	public:

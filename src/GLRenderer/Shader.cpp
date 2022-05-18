@@ -145,7 +145,8 @@ namespace glrenderer
 
         int location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
-            std::cerr << "uniform {} doesn't exist!" << name << std::endl;
+            // TODO LOG SILENT
+            //std::cerr << "uniform {} doesn't exist!" << name << std::endl;
 
         m_UniformLocationCache[name] = location;
         return location;

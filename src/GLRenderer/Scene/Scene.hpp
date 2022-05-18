@@ -8,6 +8,8 @@
 
 #include "../Shader.h"
 #include "../Lighting/DirectionalLight.hpp"
+#include "../Lighting/PointLight.hpp"
+
 
 namespace glrenderer {
 
@@ -50,6 +52,10 @@ namespace glrenderer {
 
 		// TEMP
 		glm::mat4 getLightSpaceMatrix();
+		void createLights(size_t numLights);
+		void updatePointLights(size_t pointLightsNum);
+
+		size_t getPointLightNum() const { return _pointLights.size(); }
 
 
 	private:
@@ -63,5 +69,6 @@ namespace glrenderer {
 	private:
 		entt::registry _registry;
 		std::shared_ptr<DirectionalLight> _directionalLight = nullptr;
+		std::vector<Glsl_PointLight> _pointLights = std::vector<Glsl_PointLight>();
 	};
 }

@@ -4,8 +4,9 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
-#include "Properties/Render/ShadowsProperties.hpp"
+#include <iostream>
 
+#include "Properties/Render/ShadowsProperties.hpp"
 #include "Framebuffer.hpp"
 
 namespace glrenderer
@@ -19,7 +20,8 @@ namespace glrenderer
 	std::unique_ptr<Framebuffer> Renderer::_shadowMap = nullptr;
 	std::unique_ptr<Framebuffer> Renderer::_renderBuffer = nullptr;
 	ERendererType Renderer::_rendererType = ERendererType::FORWARD;
-
+	const int Renderer::MAX_NUM_TOTAL_LIGHTS = 200;
+	unsigned int Renderer::uboLights = 0;
 
 	void Renderer::init()
 	{
@@ -40,12 +42,29 @@ namespace glrenderer
 
 		_renderBuffer = Framebuffer::createRenderingBuffer(64, 64); // used for main rendering (viewport)
 		_shadowMap = Framebuffer::createDepthBuffer(1024, 1024);     // used for shadow mapping
+
+		// Create UBO
+		glGenBuffers(1, &uboLights);
+		glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * MAX_NUM_TOTAL_LIGHTS, NULL, GL_DYNAMIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboLights);
 	}
 
 	void Renderer::free()
 	{
 		_renderBuffer->free();
 		_shadowMap->free();
+	}
+
+	/*
+	* TODO Un UBO == un systeme de particules
+	*/
+	void Renderer::updateLights(const std::vector<Glsl_PointLight>& lights)
+	{
+		glBindBuffer(GL_UNIFORM_BUFFER, uboLights);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Glsl_PointLight) * lights.size(), lights.data());
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	void Renderer::drawDepth(const std::shared_ptr<VertexArray>& vertexArray, const glm::mat4& transform,
@@ -83,23 +102,27 @@ namespace glrenderer
 		shader->SetUniformMatrix4fv("uModelMatrix", transform);
 		shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 		shader->SetUniform3f("uCameraPos", _cameraData.position);
-		shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows() ? 1 : 0);
-		
-		shader->SetUniform1i("shadowMap", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthId);
 
-		//if (_shadowProperties->getSoftShadows())
-		//{
-			shader->SetUniform1i("uBlockerSearchDist", 1);
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_1D, _shadowProperties->getBlockerSearchDistribution());
-			shader->SetUniform1i("uPCFFilteringDist", 2);
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_1D, _shadowProperties->getPCFFilteringDistribution());
-			shader->SetUniform1i("uBlockerSearchSamples", _shadowProperties->getBlockerSearchSamples());
-			shader->SetUniform1i("uPCFFilteringSamples", _shadowProperties->getPCFSamples());
-		//}
+		if (_shadowProperties->getComputeShadows())
+		{
+			shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows() ? 1 : 0);
+		
+			shader->SetUniform1i("shadowMap", 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, depthId);
+
+			//if (_shadowProperties->getSoftShadows())
+			//{
+				shader->SetUniform1i("uBlockerSearchDist", 1);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_1D, _shadowProperties->getBlockerSearchDistribution());
+				shader->SetUniform1i("uPCFFilteringDist", 2);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_1D, _shadowProperties->getPCFFilteringDistribution());
+				shader->SetUniform1i("uBlockerSearchSamples", _shadowProperties->getBlockerSearchSamples());
+				shader->SetUniform1i("uPCFFilteringSamples", _shadowProperties->getPCFSamples());
+			//}
+		}
 
 		vertexArray->bind();
 		draw(vertexArray);
