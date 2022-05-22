@@ -40,7 +40,7 @@ private:
 	void renderQuad();
 
 protected:
-	uint32_t _maximumLightCount = 200;
+	uint32_t _maximumLightCount = 500;
 
 	// TODO inside abstract class ?
 protected:

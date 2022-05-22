@@ -7,6 +7,7 @@
 #include "../Camera.hpp"
 #include "../Scene/Entity.hpp"
 
+#include "ImBridge/Bridge.hpp"
 
 namespace glrenderer
 {
@@ -28,8 +29,6 @@ public:
 	
 	void Free();
 
-	void SwitchRenderer(ERendererType inRendererType);
-
 	void Resize(uint32_t width, uint32_t height);
 
 	const std::shared_ptr<IRenderer>& GetRenderer() const { return _renderer; }
@@ -41,6 +40,10 @@ public:
 	const std::shared_ptr<ShadowsProperties>& GetShadowProperties() const {
 		return _shadowProperties;
 	}
+
+	const std::shared_ptr<ImBridge::Bridge>& GetBridge() { return _bridge; }
+
+	void SetEvents(const std::shared_ptr<Scene>& scene);
 
 private:
 	void InitializeContext();
@@ -55,8 +58,20 @@ private:
 
 	void SendGlobalUniform(const std::shared_ptr<Shader>& shader);
 
-
 	void SetClearColor(const glm::vec3& color);
+
+	void SwitchRendererID(int inRendererTypeID);
+	bool SwitchRenderer(ERendererType inRendererType);
+
+
+// Events
+public:
+	using OnSwitchRendererCallback = std::function<void(int newMaxRendererLights)>;
+
+private:
+	OnSwitchRendererCallback SC_SwitchRenderer;
+// End of events
+
 
 private:
 	std::shared_ptr<IRenderer> _renderer = nullptr;
@@ -101,6 +116,8 @@ private:
 	int _pointLightsNum = 0;
 
 	glm::vec3 _clearColor = glm::vec3(0.15f, 0.15f, 0.15f);
+
+	std::shared_ptr<ImBridge::Bridge> _bridge;
 };
 
 }

@@ -7,6 +7,7 @@
 #include "../Framebuffer.hpp"
 #include "../Lighting/PointLight.hpp"
 
+#include <functional>
 
 namespace glrenderer
 {
@@ -16,6 +17,14 @@ RendererContext::RendererContext()
 	SwitchRenderer(_rendererType);
 
 	InitializeContext();
+
+	_bridge = std::make_shared<ImBridge::Bridge>();
+	_bridge->addCombo(
+		"Renderer",
+		"Forward\0 Deferred\0\0",
+		2,
+		[this](unsigned int id) {this->SwitchRendererID(id); },
+		"Change rendering algorithm.");
 }
 
 void RendererContext::InitializeContext()
@@ -121,13 +130,24 @@ void RendererContext::Free()
 
 	_renderBuffer->free();
 	_shadowMap->free();
+	glDeleteBuffers(1, &_pointLightsUBO);
+
 }
 
-void RendererContext::SwitchRenderer(ERendererType inRendererType)
+void RendererContext::SwitchRendererID(int inRendererTypeID)
+{
+	ERendererType inRendererType = static_cast<ERendererType>(inRendererTypeID);
+	if (SwitchRenderer(inRendererType))
+	{
+		SC_SwitchRenderer(_renderer->GetMaximumLightCount());
+	}
+}
+
+bool RendererContext::SwitchRenderer(ERendererType inRendererType)
 {
 	if (_renderer && inRendererType == _renderer->GetType())
 	{
-		return;
+		return false;
 	}
 
 	if (!_rendererList.empty())
@@ -146,7 +166,7 @@ void RendererContext::SwitchRenderer(ERendererType inRendererType)
 				// Start new renderer
 				_renderer->Start();
 
-				return;
+				return true;
 			}
 		}
 	}
@@ -159,7 +179,10 @@ void RendererContext::SwitchRenderer(ERendererType inRendererType)
 		_renderer->Initialize(GlobalUniformCallback, _width, _height);
 		_renderer->Start();
 		_rendererList.push_back(_renderer);
+		return true;
 	}
+
+	return false;
 }
 
 void RendererContext::CreateRenderer(ERendererType rendererType)
@@ -195,6 +218,12 @@ void RendererContext::OnLightUpdate(const std::vector<Glsl_PointLight>& lights)
 	glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Glsl_PointLight) * _pointLightsNum, lights.data());
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void  RendererContext::SetEvents(const std::shared_ptr<Scene>& scene)
+{
+	auto OnSwitchRendererCallback = std::bind(&Scene::OnRendererSwitch, scene.get(), std::placeholders::_1);
+	SC_SwitchRenderer = OnSwitchRendererCallback;
 }
 
 void RendererContext::Resize(uint32_t width, uint32_t height)

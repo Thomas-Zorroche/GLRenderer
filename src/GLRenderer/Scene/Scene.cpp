@@ -1,7 +1,11 @@
 ﻿#include "Scene.hpp"
+
 #include "Component.hpp"
 #include "../Mesh.hpp"
 #include "Entity.hpp"
+
+#include "ImBridge/Bridge.hpp"
+#include "ImBridge/Parameter.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "../Properties/Render/ShadowsProperties.hpp"
@@ -72,11 +76,12 @@ namespace glrenderer {
 		auto OnLightUpdateCallback = std::bind(&RendererContext::OnLightUpdate, rendererContext.get(), std::placeholders::_1);
 		RC_OnLightUpdate = OnLightUpdateCallback;
 
+		static int pointLightsNum = 10;
+		createLights(pointLightsNum);
 		_bridge = std::make_shared<ImBridge::Bridge>();
-		static int PointNumLight = 0;
 		_bridge->addInt(
 			"PointLightNum",
-			PointNumLight,
+			pointLightsNum,
 			0,
 			rendererContext->GetRenderer()->GetMaximumLightCount(),
 			"Number of point lights in the scene",
@@ -275,9 +280,10 @@ namespace glrenderer {
 		return false;
 	}
 
-	void Scene::OnRendererSwitch(const std::shared_ptr<IRenderer>& renderer)
+	void Scene::OnRendererSwitch(int newMaxLights)
 	{
-		_rendererMaximumLightCount = renderer->GetMaximumLightCount();
+		_rendererMaximumLightCount = newMaxLights;
+		_bridge->getParameter<ImBridge::ParameterInt>("PointLightNum")->maxValue = _rendererMaximumLightCount;
 	}
 
 

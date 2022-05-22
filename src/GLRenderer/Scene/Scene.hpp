@@ -84,7 +84,7 @@ private:
 
 // Events received from renderer
 public:
-	void OnRendererSwitch(const std::shared_ptr<class IRenderer>& renderer);
+	void OnRendererSwitch(int newMaxLights);
 // End of events received from renderer
 
 

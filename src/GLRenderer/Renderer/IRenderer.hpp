@@ -17,11 +17,12 @@
 namespace glrenderer
 {
 
-enum class ERendererType
+enum class ERendererType : uint8_t
 {
 	FORWARD = 0,
 	DEFERRED
 };
+
 
 /*
 * Interface Renderer class with functions shared with all renderers
