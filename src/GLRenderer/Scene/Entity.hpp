@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "Scene.hpp"
-
-#include <entt/entt.hpp>
 #include <iostream>
 #include <string>
+
+#include <entt/entt.hpp>
+#include "Scene.hpp"
 
 namespace glrenderer {
 

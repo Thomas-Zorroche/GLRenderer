@@ -10,65 +10,102 @@
 #include "../Lighting/DirectionalLight.hpp"
 #include "../Lighting/PointLight.hpp"
 
+#include "ImBridge/Bridge.hpp"
+
 
 namespace glrenderer {
 
-	class Entity;
+enum class EBaseEntityType
+{
+	Cube = 0,
+	Plan,
+	Sphere,
 
-	class Scene
+	PointLight,
+	DirectionalLight,
+	SpotLight,
+	
+	ParticuleSystem
+};
+
+class Entity;
+
+class Scene
+{
+public:
+	Scene(const std::shared_ptr<class RendererContext>& rendererContext);
+	~Scene();
+
+	const std::shared_ptr<ImBridge::Bridge>& GetBridge() { return _bridge; }
+
+	friend class Entity;
+
+public:
+// Entity Management
+	bool ImportModel(const std::string& modelPath);
+
+	void CreateBaseEntity(EBaseEntityType baseEntityType);
+
+	void RenameEntity(Entity& entity, const std::string& name);
+
+	entt::registry& GetScene() { return _registry; }
+private:
+	Entity CreateEntity(const std::string& label = "");
+
+	void makeUniqueLabel(std::string& label);
+
+	bool isLabelDuplicate(const std::string& name);
+
+	template <typename Function>
+	void forEachEntity(Function function)
 	{
-	public:
-		Scene();
-		~Scene();
-
-		void renderScene(const std::shared_ptr<class Camera>& camera, const Entity& entitySelected);
-
-		void computeDepthPass();
-		void computeRenderPass(const std::shared_ptr<class Camera>& camera, const Entity& entitySelected);
-
-		bool importModel(const std::string& modelPath);
-
-		Entity createEntity(const std::string& label = "");
-
-		template <typename Function>
-		void forEachEntity(Function function)
+		auto view = _registry.view<TransformComponent>();
+		for (const auto& entityId : view)
 		{
-			auto view = _registry.view<TransformComponent>();
-			for (const auto& entityId : view)
-			{
-				Entity entity = { entityId, this };
-				function(entity);
-			}
+			Entity entity = { entityId, this };
+			function(entity);
 		}
+	}
+// End of entity management
 
-		void makeUniqueLabel(std::string& label);
+	void setDirectionalLight(const std::shared_ptr<DirectionalLight>& dirLight)
+	{
+		_directionalLight = dirLight;
+	}
+	const std::shared_ptr<DirectionalLight>& getDirectionalLight() const { return _directionalLight; }
+	std::shared_ptr<DirectionalLight> getDirectionalLight() { return _directionalLight; }
 
-		void setDirectionalLight(const std::shared_ptr<DirectionalLight>& dirLight)
-		{
-			_directionalLight = dirLight;
-		}
-		const std::shared_ptr<DirectionalLight>& getDirectionalLight() const { return _directionalLight; }
-		std::shared_ptr<DirectionalLight> getDirectionalLight() { return _directionalLight; }
+	// TEMP
+	//glm::mat4 getLightSpaceMatrix();
+	void createLights(size_t numLights);
+	void updatePointLights(size_t pointLightsNum);
 
-		// TEMP
-		glm::mat4 getLightSpaceMatrix();
-		void createLights(size_t numLights);
-		void updatePointLights(size_t pointLightsNum);
+	size_t getPointLightNum() const { return _pointLights.size(); }
 
-		size_t getPointLightNum() const { return _pointLights.size(); }
+// Events received from renderer
+public:
+	void OnRendererSwitch(const std::shared_ptr<class IRenderer>& renderer);
+// End of events received from renderer
 
 
-	private:
-		bool isLabelDuplicate(const std::string& name);
-		
-		// TODO: Move this outside Scene class
-		void sendLightingUniforms(const std::shared_ptr<Shader>& shader);
+// Events sent to renderer
+public:
+	using OnLightUpdateCallback = std::function<void(const std::vector<Glsl_PointLight>& lights)>;
 
-		friend class Entity;
+private:
+	OnLightUpdateCallback RC_OnLightUpdate;
+// End of events sent to renderer
 
-	private:
-		entt::registry _registry;
-		std::shared_ptr<DirectionalLight> _directionalLight = nullptr;
-		std::vector<Glsl_PointLight> _pointLights = std::vector<Glsl_PointLight>();
-	};
+private:
+	entt::registry _registry;
+
+	std::shared_ptr<DirectionalLight> _directionalLight = nullptr;
+
+	std::vector<Glsl_PointLight> _pointLights = std::vector<Glsl_PointLight>();
+
+	uint32_t _rendererMaximumLightCount = 200;
+
+	std::shared_ptr<ImBridge::Bridge> _bridge;
+};
+
 }

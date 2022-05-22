@@ -29,7 +29,7 @@ namespace glrenderer {
 		bool getComputeShadows() const { return _computeShadows; }
 
 	public:
-		const std::shared_ptr<ImBridge::Bridge>& getBridge() { return _bridge; }
+		const std::shared_ptr<ImBridge::Bridge>& GetBridge() { return _bridge; }
 		void onBlockerSearchSamplesUpdate(unsigned int id);
 		void onPCFFilteringSamplesUpdate(unsigned int id);
 
