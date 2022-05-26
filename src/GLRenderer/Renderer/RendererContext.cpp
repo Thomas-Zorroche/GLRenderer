@@ -153,6 +153,12 @@ void RendererContext::OnRendererSwitch()
 {
 	UpdateViewportBufferList();
 
+	// Check if lights count is above current renderer limit
+	if (_pointLightsNum > _renderer->GetMaximumLightCount())
+	{
+		_pointLightsNum = _renderer->GetMaximumLightCount();
+	}
+
 	//glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
 	//glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * _renderer->GetMaximumLightCount(), NULL, GL_DYNAMIC_DRAW);
 	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
