@@ -22,7 +22,7 @@ namespace glrenderer {
 	class PointLight : public BaseLight
 	{
 	public:
-		PointLight(const glm::vec3& color = glm::vec3(1.0, 1.0, 1.0), float intensity = 1.0f);
+		PointLight(const glm::vec3& color = glm::vec3(1.0, 1.0, 1.0), float intensity = 5.0f);
 
 		~PointLight() = default;
 

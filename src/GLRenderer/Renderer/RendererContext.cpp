@@ -7,6 +7,8 @@
 #include "../Framebuffer.hpp"
 #include "../Lighting/PointLight.hpp"
 
+#include "ImBridge/Parameter.hpp"
+
 #include <functional>
 
 namespace glrenderer
@@ -14,10 +16,6 @@ namespace glrenderer
 
 RendererContext::RendererContext()
 {
-	SwitchRenderer(_rendererType);
-
-	InitializeContext();
-
 	_bridge = std::make_shared<ImBridge::Bridge>();
 	_bridge->addCombo(
 		"Renderer",
@@ -25,35 +23,31 @@ RendererContext::RendererContext()
 		2,
 		[this](unsigned int id) {this->SwitchRendererID(id); },
 		"Change rendering algorithm.");
+	_bridge->addListBox(
+		"Display Viewport",
+		{ "LightingTextured", "Solid", "Textured", "Wireframe" },
+		[this](unsigned int id) {this->SetViewportBufferState(id); },
+		"Change viewport state.");
+
+	InitializeContext();
+	SwitchRenderer(_rendererType);
 }
 
 void RendererContext::InitializeContext()
 {
-	// Blending
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// Depth
-	glEnable(GL_DEPTH_TEST);
-
-	// Stencil
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-	SetClearColor(glm::vec4(0.15, 0.15, 0.15, 1.0));
+	//SetClearColor(glm::vec4(0.15, 0.15, 0.15, 1.0));
 
 	flatMaterial.setShader(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
 	//depthMaterial.setShader(std::make_shared<Shader>("res/shaders/Depth.vert", "res/shaders/Depth.frag"));
 
-	_renderBuffer = Framebuffer::createRenderingBuffer(64, 64); // used for main rendering (viewport)
+	_renderBuffer = Framebuffer::createRenderingBuffer(_width, _height); // used for main rendering (viewport)
 
-	_shadowMap = Framebuffer::createDepthBuffer(1024, 1024);     // used for shadow mapping
+	_shadowMap = Framebuffer::createDepthBuffer(_width, _height);     // used for shadow mapping
 
 	// Create Point Lights UBO
 	glGenBuffers(1, &_pointLightsUBO);
 	glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * _renderer->GetMaximumLightCount(), NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * 2000, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, _pointLightsUBO);
 }
@@ -69,53 +63,18 @@ void RendererContext::RenderScene(const std::shared_ptr<Camera>& camera, entt::r
 
 void RendererContext::PreRenderContext(const std::shared_ptr<Camera>& camera)
 {
-	_renderBuffer->bind();
-	_renderer->Clear();
-
 	SetCamera(camera);
 }
 
 void RendererContext::PostRenderContext()
 {
-	_renderBuffer->unbind();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RendererContext::SetCamera(const std::shared_ptr<Camera>& camera)
 {
 	_cameraData.viewProjectionMatrix = camera->getViewProjectionMatrix();
 	_cameraData.position = camera->getPosition();
-}
-
-void RendererContext::SendGlobalUniform(const std::shared_ptr<Shader>& shader)
-{
-	// Camera
-	shader->SetUniformMatrix4fv(GLOBAL_UNIFORM_NAME.viewProjectionMatrix, _cameraData.viewProjectionMatrix);
-	shader->SetUniform3f(GLOBAL_UNIFORM_NAME.cameraPostion, _cameraData.position);
-
-	// Shadows
-	if (_shadowProperties->getComputeShadows())
-	{
-		shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows() ? 1 : 0);
-
-		shader->SetUniform1i("shadowMap", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _shadowMap->getId());
-
-		//if (_shadowProperties->getSoftShadows())
-		//{
-		shader->SetUniform1i("uBlockerSearchDist", 1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_1D, _shadowProperties->getBlockerSearchDistribution());
-		shader->SetUniform1i("uPCFFilteringDist", 2);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_1D, _shadowProperties->getPCFFilteringDistribution());
-		shader->SetUniform1i("uBlockerSearchSamples", _shadowProperties->getBlockerSearchSamples());
-		shader->SetUniform1i("uPCFFilteringSamples", _shadowProperties->getPCFSamples());
-		//}
-	}
-
-	// Lighting
-	shader->SetUniform1i(GLOBAL_UNIFORM_NAME.NumPointLights, _pointLightsNum);
 }
 
 void RendererContext::Free()
@@ -128,10 +87,10 @@ void RendererContext::Free()
 		}
 	}
 
+	_renderer->Free();
 	_renderBuffer->free();
 	_shadowMap->free();
 	glDeleteBuffers(1, &_pointLightsUBO);
-
 }
 
 void RendererContext::SwitchRendererID(int inRendererTypeID)
@@ -166,6 +125,8 @@ bool RendererContext::SwitchRenderer(ERendererType inRendererType)
 				// Start new renderer
 				_renderer->Start();
 
+				OnRendererSwitch();
+
 				return true;
 			}
 		}
@@ -175,28 +136,58 @@ bool RendererContext::SwitchRenderer(ERendererType inRendererType)
 	CreateRenderer(inRendererType);
 	if (_renderer)
 	{
-		std::function<void(const std::shared_ptr<Shader>& shader)> GlobalUniformCallback = std::bind(&RendererContext::SendGlobalUniform, this, std::placeholders::_1);
-		_renderer->Initialize(GlobalUniformCallback, _width, _height);
+		_renderer->Initialize();
 		_renderer->Start();
 		_rendererList.push_back(_renderer);
+		OnRendererSwitch();
+
 		return true;
 	}
 
 	return false;
 }
 
+void RendererContext::OnRendererSwitch()
+{
+	UpdateViewportBufferList();
+
+	//glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
+	//glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * _renderer->GetMaximumLightCount(), NULL, GL_DYNAMIC_DRAW);
+	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void RendererContext::UpdateViewportBufferList()
+{
+	if (auto parameter = _bridge->getParameter<ImBridge::ParameterListBox>("Display Viewport"))
+	{
+		parameter->_items.clear();
+		parameter->_items.push_back("LightingTextured");
+		parameter->_items.push_back("Solid");
+		parameter->_items.push_back("Textured");
+		parameter->_items.push_back("Wireframe");
+
+		_renderer->AddViewportBufferInList(parameter->_items);
+	}
+}
+
 void RendererContext::CreateRenderer(ERendererType rendererType)
 {
+	RendererData rendererData = {
+		_width,
+		_height,
+		_renderBuffer->getId()
+	};
+
 	switch (rendererType)
 	{
 	case glrenderer::ERendererType::FORWARD:
 	{
-		_renderer = std::make_shared<ForwardRenderer>(); 
+		_renderer = std::make_shared<ForwardRenderer>(rendererData, this);
 		break;
 	}
 	case glrenderer::ERendererType::DEFERRED:
 	{
-		_renderer = std::make_shared<DeferredRenderer>(); 
+		_renderer = std::make_shared<DeferredRenderer>(rendererData, this);
 		break;
 	}
 	default:
@@ -213,17 +204,18 @@ void RendererContext::OnLightUpdate(const std::vector<Glsl_PointLight>& lights)
 	{
 		return;
 	}
-	
+
 	_pointLightsNum = lights.size();
 	glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Glsl_PointLight) * _pointLightsNum, lights.data());
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void  RendererContext::SetEvents(const std::shared_ptr<Scene>& scene)
+void RendererContext::SetEvents(const std::shared_ptr<Scene>& scene)
 {
 	auto OnSwitchRendererCallback = std::bind(&Scene::OnRendererSwitch, scene.get(), std::placeholders::_1);
 	SC_SwitchRenderer = OnSwitchRendererCallback;
+	SC_SwitchRenderer(_renderer->GetMaximumLightCount());
 }
 
 void RendererContext::Resize(uint32_t width, uint32_t height)
@@ -243,11 +235,68 @@ void RendererContext::SetClearColor(const glm::vec3& color)
 	glClearColor(color.r, color.g, color.b, 1.0f);
 }
 
-unsigned int RendererContext::GetRenderBuffer() const
+uint32_t RendererContext::GetRenderBufferTextureID() const
 {
 	return _renderBuffer->getTextureId();
 }
 
+
+void RendererContext::SetViewportBufferState(int bufferStateID)
+{
+	if (bufferStateID >= 0 && bufferStateID <= 7)
+		_viewportBufferState = static_cast<EViewportBufferState>(bufferStateID);
+
+	// update shaders if needed
+	if (_viewportBufferState == EViewportBufferState::LightingTextured
+		|| _viewportBufferState == EViewportBufferState::Solid
+		|| _viewportBufferState == EViewportBufferState::Textured
+		|| _viewportBufferState == EViewportBufferState::Wireframe)
+	{
+		// Update shaders
+
+	}
+}
+
+void RendererContext::SendLightingUniforms(const std::shared_ptr<Shader>& shader)
+{
+	shader->SetUniform1i(GLOBAL_UNIFORM_NAME.NumPointLights, _pointLightsNum);
+}
+
+void RendererContext::SendCameraUniforms(const std::shared_ptr<Shader>& shader)
+{
+	shader->SetUniformMatrix4fv(GLOBAL_UNIFORM_NAME.viewProjectionMatrix, _cameraData.viewProjectionMatrix);
+	shader->SetUniform3f(GLOBAL_UNIFORM_NAME.cameraPostion, _cameraData.position);
+}
+
+void RendererContext::SendShadowsUniforms(const std::shared_ptr<Shader>& shader)
+{
+	if (!_shadowProperties->getComputeShadows())
+	{
+		return;
+	}
+
+	shader->SetUniform1i("shadowMap", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, _shadowMap->getId());
+
+	shader->SetUniform1i("uSoftShadows", _shadowProperties->getSoftShadows() ? 1 : 0);
+	//if (_shadowProperties->getSoftShadows())
+	//{
+	shader->SetUniform1i("uBlockerSearchDist", 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_1D, _shadowProperties->getBlockerSearchDistribution());
+	shader->SetUniform1i("uPCFFilteringDist", 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_1D, _shadowProperties->getPCFFilteringDistribution());
+	shader->SetUniform1i("uBlockerSearchSamples", _shadowProperties->getBlockerSearchSamples());
+	shader->SetUniform1i("uPCFFilteringSamples", _shadowProperties->getPCFSamples());
+	//}
+}
+
+void RendererContext::SendModelUniform(const std::shared_ptr<Shader>& shader, const glm::mat4& modelMatrix)
+{
+	shader->SetUniformMatrix4fv(GLOBAL_UNIFORM_NAME.modelMatrix, modelMatrix);
+}
 
 
 }

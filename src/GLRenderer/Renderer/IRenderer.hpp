@@ -23,6 +23,21 @@ enum class ERendererType : uint8_t
 	DEFERRED
 };
 
+enum class EViewportBufferState : uint8_t
+{
+	LightingTextured = 0, // Base type with lighting and textures
+
+	Solid,
+	Textured,
+	Wireframe,
+
+	// Deffered rendering
+	Color,
+	Spec,
+	Position,
+	Normal
+};
+
 
 /*
 * Interface Renderer class with functions shared with all renderers
@@ -50,12 +65,13 @@ public:
 
 	// Called if the renderer was active during the application
 	virtual void Free() = 0;
+
 // End of mandatory override function
 
 public:
 // Generic Renderer functions
 	// In the first start, we initialize renderer data
-	virtual void Initialize(const SendGlobalUniformCallback& SendGlobalUniformCb, uint32_t width, uint32_t height) {}
+	virtual void Initialize() {}
 
 	// Called on switch when this renderer is the new one
 	virtual void Start() {}
@@ -64,6 +80,10 @@ public:
 	virtual void Stop() {}
 
 	virtual void Resize(uint32_t width, uint32_t height) {}
+
+	virtual unsigned int GetBufferTextureId(EViewportBufferState Buffer) { return 0; }
+
+	virtual void AddViewportBufferInList(std::vector<std::string>& buffers) {};
 // End of generic Renderer functions
 
 

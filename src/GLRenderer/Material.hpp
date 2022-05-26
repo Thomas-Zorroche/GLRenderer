@@ -15,6 +15,8 @@ namespace glrenderer {
 		void bind() const;
 		void unbind();
 
+		void bindColorTexture() const;
+
 		const glm::vec3& getDiffuse() const { return _diffuse; }
 		glm::vec3& getDiffuse() { return _diffuse; }
 		void updateDiffuse();
@@ -39,5 +41,6 @@ namespace glrenderer {
 		float _shininess = 450.0f;
 
 		int _baseColorTexture = -1;
+		glm::vec4 _baseColorFactor = glm::vec4(1.f, 1.f, 1.f, 1.f);
 	};
 }

@@ -5,17 +5,41 @@
 #include "../Scene/Component.hpp"
 #include "../Framebuffer.hpp"
 
-
 namespace glrenderer
 {
 
-void ForwardRenderer::Initialize(const SendGlobalUniformCallback& SendGlobalUniformCb, uint32_t width, uint32_t height)
+ForwardRenderer::ForwardRenderer(RendererData rendererData, RendererContext* renderContext)
+	: ARendererBase(rendererData, renderContext)
 {
-	SendGlobalUniform = SendGlobalUniformCb;
+
+}
+
+
+void ForwardRenderer::Initialize()
+{
+	// Blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Depth
+	glEnable(GL_DEPTH_TEST);
+
+	// Stencil
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+	// Clear Color
+	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void ForwardRenderer::Render(entt::registry& scene, const Entity& entitySelected)
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, _rendererData.RENDER_BUFFER);
+
+	glStencilMask(0xFF);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 	// Depth Pass
 	//Renderer::getShadowMap()->bind(); // TODO replace 1024 by variable
 	//Renderer::clear();
@@ -42,10 +66,10 @@ void ForwardRenderer::Render(entt::registry& scene, const Entity& entitySelected
 		const std::shared_ptr<Shader>& shader = material->getShader();
 		material->bind();
 
-		SendGlobalUniform(shader);
-
-		shader->SetUniformMatrix4fv("uModelMatrix", transform.getModelMatrix());
-
+		SendCameraUniforms(shader);
+		SendShadowsUniforms(shader);
+		SendLightingUniforms(shader);
+		SendModelUniform(shader, transform.getModelMatrix());
 
 		// TODO Optimize this
 		//if (_shadowProperties->getComputeShadows())

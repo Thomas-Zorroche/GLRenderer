@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "IRenderer.hpp"
+#include "ARendererBase.hpp"
 
 #include <memory>
 
@@ -31,11 +31,9 @@ public:
 
 	void Resize(uint32_t width, uint32_t height);
 
-	const std::shared_ptr<IRenderer>& GetRenderer() const { return _renderer; }
+	const std::shared_ptr<ARendererBase>& GetRenderer() const { return _renderer; }
 
 	void OnLightUpdate(const std::vector<Glsl_PointLight>& lights);
-
-	unsigned int GetRenderBuffer() const;
 
 	const std::shared_ptr<ShadowsProperties>& GetShadowProperties() const {
 		return _shadowProperties;
@@ -44,6 +42,16 @@ public:
 	const std::shared_ptr<ImBridge::Bridge>& GetBridge() { return _bridge; }
 
 	void SetEvents(const std::shared_ptr<Scene>& scene);
+
+	uint32_t GetRenderBufferTextureID() const;
+
+public:
+// Renderer callbacks
+	void SendLightingUniforms(const std::shared_ptr<Shader>& shader);
+	void SendCameraUniforms(const std::shared_ptr<Shader>& shader);
+	void SendShadowsUniforms(const std::shared_ptr<Shader>& shader);
+	void SendModelUniform(const std::shared_ptr<Shader>& shader, const glm::mat4& modelMatrix);
+// end of renderer callbacks
 
 private:
 	void InitializeContext();
@@ -56,13 +64,16 @@ private:
 
 	void CreateRenderer(ERendererType rendererType);
 
-	void SendGlobalUniform(const std::shared_ptr<Shader>& shader);
-
 	void SetClearColor(const glm::vec3& color);
 
 	void SwitchRendererID(int inRendererTypeID);
 	bool SwitchRenderer(ERendererType inRendererType);
 
+	void SetViewportBufferState(int bufferStateID);
+
+	void UpdateViewportBufferList();
+
+	void OnRendererSwitch();
 
 // Events
 public:
@@ -72,16 +83,21 @@ private:
 	OnSwitchRendererCallback SC_SwitchRenderer;
 // End of events
 
+private:
+// ARendererBase data
+	// Render framebuffer size
+	uint32_t _width = 1280;
+	uint32_t _height = 720;
+
+	int _pointLightsNum = 0;
+
+// End of ARendererBase data
 
 private:
-	std::shared_ptr<IRenderer> _renderer = nullptr;
+	std::shared_ptr<ARendererBase> _renderer = nullptr;
 
-	std::vector<std::shared_ptr<glrenderer::IRenderer>> _rendererList;
+	std::vector<std::shared_ptr<glrenderer::ARendererBase>> _rendererList;
 	
-	// Render framebuffer size
-	uint32_t _width;
-	uint32_t _height;
-
 	struct CameraData
 	{
 		glm::vec3 position;
@@ -100,11 +116,10 @@ private:
 	};
 	GlobalUniformName GLOBAL_UNIFORM_NAME;
 
-
 	std::shared_ptr<ShadowsProperties> _shadowProperties = std::make_shared<ShadowsProperties>();
 
-	std::unique_ptr<class Framebuffer> _shadowMap;
-	std::unique_ptr<class Framebuffer> _renderBuffer;
+	std::unique_ptr<class Framebuffer> _shadowMap = nullptr;
+	std::unique_ptr<class Framebuffer> _renderBuffer = nullptr;
 
 	// TEMP
 	Material flatMaterial = Material(nullptr);
@@ -113,9 +128,9 @@ private:
 
 	ERendererType _rendererType = ERendererType::FORWARD;
 
-	int _pointLightsNum = 0;
-
 	glm::vec3 _clearColor = glm::vec3(0.15f, 0.15f, 0.15f);
+
+	EViewportBufferState _viewportBufferState = EViewportBufferState::LightingTextured;
 
 	std::shared_ptr<ImBridge::Bridge> _bridge;
 };

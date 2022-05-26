@@ -18,8 +18,8 @@ void IRenderer::RenderScene(const std::shared_ptr<Camera>& camera, entt::registr
 
 void IRenderer::Clear()
 {
-	glStencilMask(0xFF);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	//glStencilMask(0xFF);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 // **********************************************************************

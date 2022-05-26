@@ -26,17 +26,23 @@ namespace glrenderer {
 	{
 		_shader->Bind();
 
-		if (_baseColorTexture >= 0)
-		{
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, _baseColorTexture);
-		}
+		bindColorTexture();
 	}
 
 	void Material::unbind()
 	{
 		_shader->Unbind();
 
+	}
+
+	void Material::bindColorTexture() const
+	{
+		if (_baseColorTexture >= 0)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, _baseColorTexture);
+			_shader->SetUniform4f("uBaseColorFactor", _baseColorFactor);
+		}
 	}
 
 	void Material::updateDiffuse()
@@ -59,7 +65,7 @@ namespace glrenderer {
 		bind();
 
 		_baseColorTexture = texture;
-		_shader->SetUniform1i("uBaseColorTexture", 3);
+		_shader->SetUniform1i("uBaseColorTexture", 0);
 		_shader->SetUniform4f("uBaseColorFactor", baseColorFactor);
 	}
 

@@ -1,16 +1,16 @@
 ﻿#pragma once
 
-#include "IRenderer.hpp"
+#include "ARendererBase.hpp"
 
 
 
 namespace glrenderer
 {
 
-class ForwardRenderer : public IRenderer
+class ForwardRenderer : public ARendererBase
 {
 public:
-	ForwardRenderer() = default;
+	ForwardRenderer(RendererData rendererData, class RendererContext* renderContext);
 
 public:
 // Mandatory override functions
@@ -24,7 +24,7 @@ public:
 // End of mandatory override functions
 
 public:
-	virtual void Initialize(const SendGlobalUniformCallback& SendGlobalUniformCb, uint32_t width, uint32_t height) override;
+	virtual void Initialize() override;
 	
 protected:
 	void DrawRenderPass(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader,

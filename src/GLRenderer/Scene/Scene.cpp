@@ -283,9 +283,11 @@ namespace glrenderer {
 	void Scene::OnRendererSwitch(int newMaxLights)
 	{
 		_rendererMaximumLightCount = newMaxLights;
-		_bridge->getParameter<ImBridge::ParameterInt>("PointLightNum")->maxValue = _rendererMaximumLightCount;
+		if (auto parameter = _bridge->getParameter<ImBridge::ParameterInt>("PointLightNum"))
+		{
+			parameter->maxValue = _rendererMaximumLightCount;
+		}
 	}
-
 
 	//void Scene::sendLightingUniforms(const std::shared_ptr<Shader>& shader)
 	//{
