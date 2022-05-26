@@ -12,6 +12,9 @@ ARendererBase::ARendererBase(RendererData rendererData, RendererContext* rendere
 	Cb_SendCameraUniforms = std::bind<void>(&RendererContext::SendCameraUniforms, rendererContext, std::placeholders::_1);
 	Cb_SendShadowsUniforms = std::bind<void>(&RendererContext::SendShadowsUniforms, rendererContext, std::placeholders::_1);
 	Cb_SendModelUniform = std::bind<void>(&RendererContext::SendModelUniform, rendererContext, std::placeholders::_1, std::placeholders::_2);
+
+	auto flatShader = std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag");
+	_flatMaterial = std::make_shared<Material>(flatShader, "FlatColor");
 }
 
 void ARendererBase::SendLightingUniforms(const std::shared_ptr<Shader>& shader)

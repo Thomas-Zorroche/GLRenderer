@@ -23,7 +23,9 @@ namespace glTFLoader
         std::string error;
         std::string warning;
 
+        std::cout << "Start Load : " << filePath << std::endl;
         bool ret = loader.LoadASCIIFromFile(&model, &error, &warning, filePath);
+        std::cout << "Finish Load : " << filePath << std::endl;
 
         if (!warning.empty())
             std::cout << "glTFLoader::loadFile warning: " << warning << std::endl;
@@ -72,6 +74,9 @@ namespace glTFLoader
             size_t primitivesCount = model.meshes[index_mesh].primitives.size();
             for (int index_primitive = 0; index_primitive < primitivesCount; index_primitive++)
             {
+                std::cout << "Loading scene: mesh: (" << index_mesh << "/" << meshesCount 
+                    << "), primitive: (" << index_primitive << "/" << primitivesCount << ")" << std::endl;
+
                 // Reset mesh data
                 vertices.clear();
                 indices.clear();

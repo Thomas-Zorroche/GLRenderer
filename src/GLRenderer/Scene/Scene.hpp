@@ -42,19 +42,13 @@ public:
 
 public:
 // Entity Management
-	bool ImportModel(const std::string& modelPath);
+	bool ImportModel(const std::string& modelPath, const uint32_t& meshGroupId);
 
 	void CreateBaseEntity(EBaseEntityType baseEntityType);
 
 	void RenameEntity(Entity& entity, const std::string& name);
 
 	entt::registry& GetScene() { return _registry; }
-private:
-	Entity CreateEntity(const std::string& label = "");
-
-	void makeUniqueLabel(std::string& label);
-
-	bool isLabelDuplicate(const std::string& name);
 
 	template <typename Function>
 	void forEachEntity(Function function)
@@ -62,10 +56,17 @@ private:
 		auto view = _registry.view<TransformComponent>();
 		for (const auto& entityId : view)
 		{
-			Entity entity = { entityId, this };
-			function(entity);
+			function(Entity(entityId, this));
 		}
 	}
+
+private:
+	Entity CreateEntity(const std::string& label = "");
+
+	void makeUniqueLabel(std::string& label);
+
+	bool isLabelDuplicate(const std::string& name);
+
 // End of entity management
 
 	void setDirectionalLight(const std::shared_ptr<DirectionalLight>& dirLight)

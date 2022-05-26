@@ -37,7 +37,6 @@ void RendererContext::InitializeContext()
 {
 	//SetClearColor(glm::vec4(0.15, 0.15, 0.15, 1.0));
 
-	flatMaterial.setShader(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/FlatColor.frag"));
 	//depthMaterial.setShader(std::make_shared<Shader>("res/shaders/Depth.vert", "res/shaders/Depth.frag"));
 
 	_renderBuffer = Framebuffer::createRenderingBuffer(_width, _height); // used for main rendering (viewport)

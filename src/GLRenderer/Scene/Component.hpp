@@ -38,6 +38,7 @@ namespace glrenderer {
 	struct LabelComponent
 	{
 		std::string label = "Entity";
+		uint32_t groupId = 0; // default group in world outliner
 
 		LabelComponent() = default;
 		LabelComponent(const LabelComponent&) = default;

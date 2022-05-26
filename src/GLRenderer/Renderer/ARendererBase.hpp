@@ -34,6 +34,8 @@ protected:
 protected:
 	RendererData _rendererData;
 
+	std::shared_ptr<Material> _flatMaterial = nullptr;
+
 private:
 // Callbacks
 	using CbType_SendUniforms = std::function<void(const std::shared_ptr<Shader>&)>;

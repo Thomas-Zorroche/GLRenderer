@@ -122,7 +122,6 @@ private:
 	std::unique_ptr<class Framebuffer> _renderBuffer = nullptr;
 
 	// TEMP
-	Material flatMaterial = Material(nullptr);
 	//Material depthMaterial;
 	unsigned int _pointLightsUBO = 0;
 

@@ -157,7 +157,7 @@ namespace glrenderer {
 		}
 	}
 
-	bool Scene::ImportModel(const std::string& modelPath)
+	bool Scene::ImportModel(const std::string& modelPath, const uint32_t& meshGroupId)
 	{
 		// ATM, import only gltf
 		tinygltf::Model model;
@@ -179,6 +179,9 @@ namespace glrenderer {
 			auto& transform = meshEntity.getComponent<glrenderer::TransformComponent>();
 			static float import_scale = 0.08f;
 			transform.scale = glm::vec3(import_scale, import_scale, import_scale);
+
+			// Add into a group
+			meshEntity.getComponent<glrenderer::LabelComponent>().groupId = meshGroupId;
 		}
 
 		std::cout << "Open " << modelPath << std::endl;
