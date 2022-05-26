@@ -51,7 +51,7 @@ private:
 	void SwitchViewportBuffer(int bufferID);
 
 private:
-	const uint32_t MAXIMUM_LIGHT_COUNT = 500;
+	const uint32_t MAXIMUM_LIGHT_COUNT = 1000;
 
 private:
 	unsigned int _gBuffer = 0;
@@ -59,7 +59,7 @@ private:
 	unsigned int _gPosition = 0;
 	unsigned int _gNormal = 0;
 	unsigned int _gColorSpec = 0;
-
+	unsigned int _rboDepth = 0;
 	unsigned int _quadVAO = 0;
 	unsigned int _quadVBO = 0;
 

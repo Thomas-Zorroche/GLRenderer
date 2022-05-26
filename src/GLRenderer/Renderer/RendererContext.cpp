@@ -47,7 +47,9 @@ void RendererContext::InitializeContext()
 	// Create Point Lights UBO
 	glGenBuffers(1, &_pointLightsUBO);
 	glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * 2000, NULL, GL_DYNAMIC_DRAW);
+	// TODO : iterate over all renderers and find max value
+	static const int MAX_LIGHTS_ALL_RENDERERS = 1000;
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * MAX_LIGHTS_ALL_RENDERERS, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, _pointLightsUBO);
 }
@@ -224,7 +226,6 @@ void RendererContext::Resize(uint32_t width, uint32_t height)
 	_height = height;
 	_renderBuffer->resize(width, height);
 	glViewport(0, 0, width, height);
-
 
 	_renderer->Resize(width, height);
 }

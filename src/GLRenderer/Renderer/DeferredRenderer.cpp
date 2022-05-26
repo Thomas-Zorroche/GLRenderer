@@ -84,11 +84,10 @@ void DeferredRenderer::createBuffers(unsigned int width, unsigned int height)
 	glDrawBuffers(3, attachments);
 	
 	// create and attach depth buffer (renderbuffer)
-	unsigned int rboDepth;
-	glGenRenderbuffers(1, &rboDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	glGenRenderbuffers(1, &_rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, _rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _rendererData._renderBufferWidth, _rendererData._renderBufferHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _rboDepth);
 	// finally check if framebuffer is complete
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete : " << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
@@ -181,6 +180,9 @@ void DeferredRenderer::Resize(uint32_t width, uint32_t height)
 
 	glBindTexture(GL_TEXTURE_2D, _gColorSpec);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _rendererData._renderBufferWidth, _rendererData._renderBufferHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, _rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _rendererData._renderBufferWidth, _rendererData._renderBufferHeight);
 }
 
 void DeferredRenderer::SwitchViewportBuffer(int bufferID)
