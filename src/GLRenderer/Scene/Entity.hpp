@@ -8,6 +8,7 @@
 
 namespace glrenderer {
 
+
 	class Entity
 	{
 	public:

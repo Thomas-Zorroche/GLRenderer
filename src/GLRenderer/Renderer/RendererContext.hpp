@@ -33,7 +33,7 @@ public:
 
 	const std::shared_ptr<ARendererBase>& GetRenderer() const { return _renderer; }
 
-	void OnLightUpdate(const std::vector<Glsl_PointLight>& lights);
+	void OnLightUpdate(uint32_t lightCount, int startBytesOffset, uint32_t modifiedLightCount, PointLightData* data);
 
 	const std::shared_ptr<ShadowsProperties>& GetShadowProperties() const {
 		return _shadowProperties;
@@ -44,6 +44,8 @@ public:
 	void SetEvents(const std::shared_ptr<Scene>& scene);
 
 	uint32_t GetRenderBufferTextureID() const;
+
+	uint32_t GetGlobalMaxLightCount() const { return GLOBAL_MAX_LIGHTS_COUNT; }
 
 public:
 // Renderer callbacks
@@ -115,6 +117,8 @@ private:
 
 	};
 	GlobalUniformName GLOBAL_UNIFORM_NAME;
+
+	const uint32_t GLOBAL_MAX_LIGHTS_COUNT = 1000;
 
 	std::shared_ptr<ShadowsProperties> _shadowProperties = std::make_shared<ShadowsProperties>();
 

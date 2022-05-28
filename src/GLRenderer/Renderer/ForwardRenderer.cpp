@@ -30,7 +30,7 @@ void ForwardRenderer::Initialize()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// Clear Color
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.141f, 0.207f, 0.211f, 1.0f);
 }
 
 void ForwardRenderer::Render(entt::registry& scene, const Entity& entitySelected)

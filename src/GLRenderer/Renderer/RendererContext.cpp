@@ -46,9 +46,7 @@ void RendererContext::InitializeContext()
 	// Create Point Lights UBO
 	glGenBuffers(1, &_pointLightsUBO);
 	glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
-	// TODO : iterate over all renderers and find max value
-	static const int MAX_LIGHTS_ALL_RENDERERS = 1000;
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(Glsl_PointLight) * MAX_LIGHTS_ALL_RENDERERS, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(PointLightData) * GLOBAL_MAX_LIGHTS_COUNT, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, _pointLightsUBO);
 }
@@ -205,16 +203,22 @@ void RendererContext::CreateRenderer(ERendererType rendererType)
 	}
 }
 
-void RendererContext::OnLightUpdate(const std::vector<Glsl_PointLight>& lights)
+void RendererContext::OnLightUpdate(uint32_t lightCount, int startBytesOffset, uint32_t modifiedLightCount, PointLightData* data)
 {
-	if (lights.size() > _renderer->GetMaximumLightCount())
+	if (lightCount < _pointLightsNum)
+	{
+		_pointLightsNum = lightCount;
+		return;
+	}
+
+	if (lightCount > _renderer->GetMaximumLightCount())
 	{
 		return;
 	}
 
-	_pointLightsNum = lights.size();
+	_pointLightsNum = lightCount;
 	glBindBuffer(GL_UNIFORM_BUFFER, _pointLightsUBO);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Glsl_PointLight) * _pointLightsNum, lights.data());
+	glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)startBytesOffset, sizeof(PointLightData) * modifiedLightCount, data);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

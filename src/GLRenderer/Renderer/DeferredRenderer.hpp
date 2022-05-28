@@ -65,8 +65,6 @@ private:
 
 	std::shared_ptr<Shader> _geometryPassShader = nullptr;
 	std::shared_ptr<Shader> _lightingPassShader = nullptr;
-
-	std::shared_ptr<ImBridge::Bridge> _bridge = nullptr;
 };
 
 }

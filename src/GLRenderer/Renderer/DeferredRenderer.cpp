@@ -39,14 +39,6 @@ void DeferredRenderer::Initialize()
 	_lightingPassShader->Unbind();
 
 	createBuffers(_rendererData._renderBufferWidth, _rendererData._renderBufferHeight);
-
-	_bridge = std::make_shared<ImBridge::Bridge>();
-	_bridge->addCombo(
-		"Viewport State",
-		"Color\0Spec\0Position\0Normal\0\0",
-		4,
-		[this](unsigned int id) {this->SwitchViewportBuffer(id); },
-		"Change viewport state.");
 }
 
 

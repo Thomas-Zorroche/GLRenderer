@@ -5,9 +5,9 @@
 
 namespace glrenderer {
 
-	struct Glsl_PointLight
+	struct PointLightData
 	{
-		glm::vec3 position;
+		glm::vec3 location;
 		float intensity;
 
 		glm::vec3 ambient;
@@ -32,16 +32,31 @@ namespace glrenderer {
 		float getRadius() const { return _radius; }
 		void setRadius(float radius);
 
-		float getLinear() const { return _linear; }
-		float getQuadratic() const { return _quadratic; }
+		//float getLinear() const { return _linear; }
+		//float getQuadratic() const { return _quadratic; }
+
+		const PointLightData& GetLightData() const;
+		PointLightData& GetLightData();
+		void CopyLightData(PointLightData* dest);
+
+		void UpdateLocation(const glm::vec3& location);
+		void UpdateDiffuse();
+		void UpdateIntensity();
+
+		void SetOffsetIndex(uint32_t offset) { _offsetIndex = offset; }
+		uint32_t GetOffsetIndex() const { return _offsetIndex; }
+
 
 	private:
 		float _radius = 20.0f;
 
 		// Attenuation values
 		const float _constant = 20.0f;
-		float _linear;
-		float _quadratic;
+
+		PointLightData _data;
+
+		// Index in scene::_lightOffsets
+		int _offsetIndex = -1;
 
 		static const std::vector<glm::vec3> s_attenuationTable;
 	};

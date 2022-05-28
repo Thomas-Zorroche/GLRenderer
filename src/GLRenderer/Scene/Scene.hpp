@@ -41,10 +41,36 @@ public:
 	friend class Entity;
 
 public:
+// Particule System
+	const std::vector<std::shared_ptr< class ParticleSystem>>& GetParticuleSystems();
+	std::shared_ptr< class ParticleSystem>& GetParticuleSystemAtIndex(uint32_t index);
+
+	void AddParticuleSystem();
+	void RemoveParticuleSystemAtIndex(uint32_t index);
+// end of particule system
+
+
+// Lighting
+public:
+	void AddLights(uint32_t count, std::vector<std::shared_ptr<PointLight>> lights);
+	void RemoveLights(uint32_t count);
+	void UpdateLights(const std::vector<std::shared_ptr<PointLight>>& lights);
+	// On point light or particule system with point lights selected
+	void OnLightBufferSelected(uint32_t index, uint32_t count = 1);
+
+	size_t getPointLightNum() const { return _pointLights.size(); }
+
+private:
+	std::vector<PointLightData> _pointLights = {};
+	std::vector<uint32_t> _lightOffsets = {};
+// end of lighting
+
+
+public:
 // Entity Management
 	bool ImportModel(const std::string& modelPath, const uint32_t& meshGroupId);
 
-	void CreateBaseEntity(EBaseEntityType baseEntityType);
+	Entity CreateBaseEntity(EBaseEntityType baseEntityType);
 
 	void RenameEntity(Entity& entity, const std::string& name);
 
@@ -78,10 +104,11 @@ private:
 
 	// TEMP
 	//glm::mat4 getLightSpaceMatrix();
-	void createLights(size_t numLights);
-	void updatePointLights(size_t pointLightsNum);
+	//void createLights(size_t numLights);
+	//void updatePointLights(size_t pointLightsNum);
 
-	size_t getPointLightNum() const { return _pointLights.size(); }
+public:
+	//void UpdateLight(std::shared_ptr<PointLight>& light);
 
 // Events received from renderer
 public:
@@ -91,22 +118,25 @@ public:
 
 // Events sent to renderer
 public:
-	using OnLightUpdateCallback = std::function<void(const std::vector<Glsl_PointLight>& lights)>;
+	using OnLightUpdateCallback = std::function<void(uint32_t lightCount, int startBytesOffset, 
+		uint32_t modifiedLightCount, PointLightData* data)>;
 
 private:
 	OnLightUpdateCallback RC_OnLightUpdate;
 // End of events sent to renderer
 
 private:
+	std::shared_ptr<ImBridge::Bridge> _bridge;
+
+private:
 	entt::registry _registry;
 
 	std::shared_ptr<DirectionalLight> _directionalLight = nullptr;
 
-	std::vector<Glsl_PointLight> _pointLights = std::vector<Glsl_PointLight>();
+	std::vector<std::shared_ptr< class ParticleSystem>> _particleSystems = {};
 
+private:
 	uint32_t _rendererMaximumLightCount = 200;
-
-	std::shared_ptr<ImBridge::Bridge> _bridge;
 };
 
 }

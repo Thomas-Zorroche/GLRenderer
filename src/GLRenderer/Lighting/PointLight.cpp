@@ -28,21 +28,57 @@ namespace glrenderer {
 		: BaseLight(LightType::Point, color, intensity)
 	{
         setRadius(_radius);
+        
+        _data.diffuse = color;
+        _data.intensity = intensity;
+        _data.ambient = glm::vec3(0, 0, 0);
+        _data.specular = glm::vec4(color, 0.0f);
+        _data.location = glm::vec3(0, 0, 0);
 	}
+
+    const PointLightData& PointLight::GetLightData() const
+    {
+        return _data;
+    }
+
+    PointLightData& PointLight::GetLightData()
+    {
+        return _data;
+    }
+
+    void PointLight::UpdateLocation(const glm::vec3& location)
+    {
+        _data.location = location;
+    }
+
+    void PointLight::UpdateDiffuse()
+    {
+        _data.diffuse = _color;
+    }
+
+    void PointLight::UpdateIntensity()
+    {
+        _data.intensity = _intensity;
+    }
+
+    void PointLight::CopyLightData(PointLightData* dest)
+    {
+        *dest = _data;
+    }
 
     void PointLight::setRadius(float radius)
     {
         if (radius <= 7.0f)
         {
-            _linear = 0.7;
-            _quadratic = 1.8;
+            _data.linear = 0.7;
+            _data.quadratic = 1.8;
             return;
         }
 
         if (radius >= 600.0)
         {
-            _linear = 0.007;
-            _quadratic = 0.0002;
+            _data.linear = 0.007;
+            _data.quadratic = 0.0002;
             return;
         }
 
@@ -56,8 +92,8 @@ namespace glrenderer {
         {
             if (glm::abs(radius - radiusData[0]) < epsilon)
             {
-                _linear = radiusData[1];
-                _quadratic = radiusData[2];
+                _data.linear = radiusData[1];
+                _data.quadratic = radiusData[2];
                 return;
             }
 
@@ -73,8 +109,8 @@ namespace glrenderer {
 
                 float t = (radius - minRadius[0]) / (maxRadius[0] - minRadius[0]);
 
-                _linear = math::lerp(minRadius[1], maxRadius[1], t);
-                _quadratic = math::lerp(minRadius[2], maxRadius[2], t);
+                _data.linear = math::lerp(minRadius[1], maxRadius[1], t);
+                _data.quadratic = math::lerp(minRadius[2], maxRadius[2], t);
                 return;
             }
         }
