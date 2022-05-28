@@ -72,6 +72,8 @@ public:
 
 	Entity CreateBaseEntity(EBaseEntityType baseEntityType);
 
+	Entity Duplicate(Entity entityToDuplicate);
+	
 	void RenameEntity(Entity& entity, const std::string& name);
 
 	entt::registry& GetScene() { return _registry; }
@@ -85,6 +87,7 @@ public:
 			function(Entity(entityId, this));
 		}
 	}
+
 
 private:
 	Entity CreateEntity(const std::string& label = "");

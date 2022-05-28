@@ -66,6 +66,11 @@ namespace glrenderer {
         *dest = _data;
     }
 
+    std::shared_ptr<BaseLight> PointLight::Clone()
+    {
+        return std::make_shared<PointLight>(*this);
+    }
+
     void PointLight::setRadius(float radius)
     {
         if (radius <= 7.0f)

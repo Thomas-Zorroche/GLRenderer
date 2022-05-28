@@ -265,6 +265,38 @@ Entity Scene::CreateEntity(const std::string& name)
 	return entity;
 }
 
+Entity Scene::Duplicate(Entity baseEntity)
+{
+	auto& labelEntity = baseEntity.getComponent<LabelComponent>();
+	Entity entityDuplicated = CreateEntity(labelEntity.label);
+
+	// If exists, copy mesh
+	if (baseEntity.hasComponent<MeshComponent>())
+	{
+		auto mesh = baseEntity.getComponent<MeshComponent>().mesh;
+		entityDuplicated.addComponent<MeshComponent>(mesh);
+	}
+
+	// If exists, copy light
+	if (baseEntity.hasComponent<LightComponent>())
+	{
+		auto& baseLight = baseEntity.getComponent<LightComponent>().light;
+		auto& light = entityDuplicated.addComponent<LightComponent>(baseLight->Clone()).light;
+		if (auto& pointLight = std::dynamic_pointer_cast<PointLight>(light))
+			AddLights(1, { pointLight });
+	}
+
+	// Always copy transform
+	auto& transformBase = baseEntity.getComponent<TransformComponent>();
+	auto& transformDuplicated = entityDuplicated.getComponent<TransformComponent>();
+
+	transformDuplicated.location = transformBase.location;
+	transformDuplicated.rotation = transformBase.rotation;
+	transformDuplicated.scale = transformBase.scale;
+
+	return entityDuplicated;
+}
+
 void Scene::RenameEntity(Entity& entity, const std::string& name)
 {
 	std::string& labelEntitySelected = entity.getComponent<glrenderer::LabelComponent>().label;

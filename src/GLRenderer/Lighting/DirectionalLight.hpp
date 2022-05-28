@@ -28,6 +28,9 @@ namespace glrenderer {
 
 		float getFrustumSize() const { return _frustumSize; }
 		float& getFrustumSize() { return _frustumSize; }
+		
+		virtual std::shared_ptr<BaseLight> Clone() override;
+
 
 	private:
 		float _farPlane = 80.0f;

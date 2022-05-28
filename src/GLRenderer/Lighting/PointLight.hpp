@@ -46,6 +46,7 @@ namespace glrenderer {
 		void SetOffsetIndex(uint32_t offset) { _offsetIndex = offset; }
 		uint32_t GetOffsetIndex() const { return _offsetIndex; }
 
+		virtual std::shared_ptr<BaseLight> Clone() override;
 
 	private:
 		float _radius = 20.0f;

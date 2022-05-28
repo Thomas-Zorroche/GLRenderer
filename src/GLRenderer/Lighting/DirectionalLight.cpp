@@ -14,6 +14,11 @@ namespace glrenderer {
 
 	}
 
+	std::shared_ptr<BaseLight> DirectionalLight::Clone()
+	{
+		return nullptr;
+	}
+
 
 
 }

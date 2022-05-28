@@ -24,6 +24,8 @@ namespace glrenderer {
 		virtual PointLight * isPointLight() = 0;
 		virtual DirectionalLight* isDirectionalLight() = 0;
 
+		virtual std::shared_ptr<BaseLight> Clone() = 0;
+
 		static std::shared_ptr<BaseLight> createLight(LightType type);
 
 		const glm::vec3& getColor() const { return _color; }
