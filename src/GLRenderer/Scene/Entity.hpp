@@ -43,6 +43,7 @@ namespace glrenderer {
 			return component;
 		}
 
+	public:
 		operator bool() const { return _scene && _entityId != entt::null; }
 
 		bool operator==(const Entity& rhs) { return _entityId == rhs._entityId; }
@@ -51,6 +52,8 @@ namespace glrenderer {
 	private:
 		Scene* _scene = nullptr;
 		entt::entity _entityId = entt::null;
+
+
 	};
 
 

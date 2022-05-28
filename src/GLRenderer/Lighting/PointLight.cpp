@@ -41,11 +41,6 @@ namespace glrenderer {
         return _data;
     }
 
-    PointLightData& PointLight::GetLightData()
-    {
-        return _data;
-    }
-
     void PointLight::UpdateLocation(const glm::vec3& location)
     {
         _data.location = location;

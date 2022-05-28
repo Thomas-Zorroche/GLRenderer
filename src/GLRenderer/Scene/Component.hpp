@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include <functional>
 
 #include "../Mesh.hpp"
 #include "../Lighting/BaseLight.hpp"
@@ -73,6 +74,16 @@ namespace glrenderer {
 		LineComponent(const LineComponent&) = default;
 		LineComponent(const std::shared_ptr<Line>& line)
 			: line(line) {}
+	};
+
+	struct CallbackComponent
+	{
+		std::function<void()> OnTransformCallback;
+
+		CallbackComponent() = default;
+		CallbackComponent(const CallbackComponent&) = default;
+		CallbackComponent(std::function<void()> callback)
+			: OnTransformCallback(callback) {}
 	};
 
 

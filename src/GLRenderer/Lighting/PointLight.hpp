@@ -36,7 +36,6 @@ namespace glrenderer {
 		//float getQuadratic() const { return _quadratic; }
 
 		const PointLightData& GetLightData() const;
-		PointLightData& GetLightData();
 		void CopyLightData(PointLightData* dest);
 
 		void UpdateLocation(const glm::vec3& location);

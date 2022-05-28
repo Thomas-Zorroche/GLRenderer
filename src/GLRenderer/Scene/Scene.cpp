@@ -229,7 +229,7 @@ Entity Scene::CreateBaseEntity(EBaseEntityType baseEntityType)
 
 		if (auto pointLight = std::dynamic_pointer_cast<PointLight>(lightComp.light))
 		{
-			AddLights(1, { pointLight});
+			AddLight(pointLight);
 		}
 		return pointLightEntity;
 		break;
@@ -283,7 +283,7 @@ Entity Scene::Duplicate(Entity baseEntity)
 		auto& baseLight = baseEntity.getComponent<LightComponent>().light;
 		auto& light = entityDuplicated.addComponent<LightComponent>(baseLight->Clone()).light;
 		if (auto& pointLight = std::dynamic_pointer_cast<PointLight>(light))
-			AddLights(1, { pointLight });
+			AddLight(pointLight);
 	}
 
 	// Always copy transform
@@ -343,6 +343,22 @@ void Scene::OnRendererSwitch(int newMaxLights)
 	_rendererMaximumLightCount = newMaxLights;
 }
 
+
+
+// -----------------------------------------------------------------------------------
+// Particule System 
+// -----------------------------------------------------------------------------------
+
+void Scene::AddParticuleSystem()
+{
+	// Will be changed at particle system initialisation
+	auto firstLight = std::make_shared<PointLight>();
+	_pointLights.push_back(firstLight->GetLightData());
+	_lightOffsets.push_back(_pointLights.size() - 1);
+
+	_particleSystems.push_back(std::make_shared<ParticleSystem>(this, _lightOffsets.size() - 1));
+}
+
 const std::vector<std::shared_ptr< class ParticleSystem>>& Scene::GetParticuleSystems()
 {
 	return _particleSystems;
@@ -356,11 +372,6 @@ std::shared_ptr<ParticleSystem>& Scene::GetParticuleSystemAtIndex(uint32_t index
 	}
 }
 
-void Scene::AddParticuleSystem()
-{
-	_particleSystems.push_back(std::make_shared<ParticleSystem>());
-}
-
 void Scene::RemoveParticuleSystemAtIndex(uint32_t index)
 {
 	if (index < _particleSystems.size())
@@ -369,11 +380,52 @@ void Scene::RemoveParticuleSystemAtIndex(uint32_t index)
 	}
 }
 
+void Scene::OnParticleSystemSelected(uint32_t PSIndex)
+{
+	// Retrieve particle system offset
+	uint32_t firstLightIndex = _particleSystems[PSIndex]->GetFirstLightOffsetIndex();
+	uint32_t offset = _lightOffsets[firstLightIndex];
+	uint32_t count = _particleSystems[PSIndex]->GetCount();
+
+	// Move light to the end of the vector
+	auto itOldStart = _pointLights.begin() + offset;
+	auto itNewStart = std::rotate(itOldStart, itOldStart + count, _pointLights.end());
+
+	// Decrease lights offsets
+	for (uint32_t index = firstLightIndex + 1; index < _lightOffsets.size() - 1; ++index)
+	{
+		_lightOffsets[index] -= count;
+	}
+	_lightOffsets[firstLightIndex] = _pointLights.size() - count;
+}
+
 // -----------------------------------------------------------------------------------
 // Lighting 
 // -----------------------------------------------------------------------------------
 
-void Scene::AddLights(uint32_t count, std::vector<std::shared_ptr<PointLight>> lights)
+void Scene::AddLight(const std::shared_ptr<PointLight>& light)
+{
+	if (_pointLights.size() + 1 > _rendererMaximumLightCount)
+	{
+		std::cout << "Cannot exceed " << _rendererMaximumLightCount << " point lights.\n";
+		return;
+	}
+
+	// Add index in offset array
+	_lightOffsets.push_back(_pointLights.size() - 1);
+	light->SetOffsetIndex(_lightOffsets.size() - 1);
+
+	size_t sizeAtStart = _pointLights.size();
+	_pointLights.push_back(light->GetLightData());
+
+	size_t startBytesOffset = sizeAtStart * sizeof(PointLightData);
+	PointLightData* dataOut = &_pointLights[sizeAtStart];
+
+	// Update Renderer UBO
+	RC_OnLightUpdate(_pointLights.size(), startBytesOffset, 1, dataOut);
+}
+
+void Scene::AddInstancedLights(uint32_t count, std::vector<std::shared_ptr<PointLight>>::const_iterator itStart, bool firstAdd)
 {
 	if (_pointLights.size() + count > _rendererMaximumLightCount)
 	{
@@ -381,14 +433,15 @@ void Scene::AddLights(uint32_t count, std::vector<std::shared_ptr<PointLight>> l
 		return;
 	}
 
-	// Add index in offset array
-	_lightOffsets.push_back(_lightOffsets.size() - 1);
-	lights[0]->SetOffsetIndex(_lightOffsets.size() - 1);
+	// First add, remove first light
+	if (firstAdd)
+		_pointLights.pop_back();
 
 	size_t sizeAtStart = _pointLights.size();
-	for (const auto& light : lights)
+	for (size_t i = 0; i < count; i++)
 	{
-		_pointLights.push_back(light->GetLightData());
+		_pointLights.push_back((*itStart)->GetLightData());
+		itStart++;
 	}
 
 	size_t startBytesOffset = sizeAtStart * sizeof(PointLightData);
@@ -426,21 +479,6 @@ void Scene::UpdateLights(const std::vector<std::shared_ptr<PointLight>>& lights)
 	RC_OnLightUpdate(_pointLights.size(), startBytesOffset, lights.size(), dataOut);
 }
 
-void Scene::OnLightBufferSelected(uint32_t index, uint32_t count)
-{
-	// Retrieve particle system offset
-	uint32_t offset = _lightOffsets[index];
-
-	// Move light to the end of the vector
-	auto it = _pointLights.begin() + offset;
-	std::rotate(it, it + count, _pointLights.end());
-
-	// Decrease lights offsets
-	for (size_t i = index + 1; i < _lightOffsets.size() - 1; i++)
-	{
-		_lightOffsets[i] -= 1;
-	}
-}
 
 //void Scene::sendLightingUniforms(const std::shared_ptr<Shader>& shader)
 //{

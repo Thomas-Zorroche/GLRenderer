@@ -52,11 +52,13 @@ public:
 
 // Lighting
 public:
-	void AddLights(uint32_t count, std::vector<std::shared_ptr<PointLight>> lights);
+	void AddLight(const std::shared_ptr<PointLight>& light);
+	void Scene::AddInstancedLights(uint32_t count, std::vector<std::shared_ptr<PointLight>>::const_iterator itStart, bool firstAdd = false);
+
 	void RemoveLights(uint32_t count);
 	void UpdateLights(const std::vector<std::shared_ptr<PointLight>>& lights);
 	// On point light or particule system with point lights selected
-	void OnLightBufferSelected(uint32_t index, uint32_t count = 1);
+	void OnParticleSystemSelected(uint32_t PSIndex);
 
 	size_t getPointLightNum() const { return _pointLights.size(); }
 
