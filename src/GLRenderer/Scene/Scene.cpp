@@ -396,10 +396,6 @@ void Scene::OnParticleSystemSelected(uint32_t PSIndex)
 	uint32_t offset = _lightOffsets[firstLightIndex];
 	uint32_t count = _particleSystems[PSIndex]->GetCount();
 
-	// Initialize some data to update renderer UBO
-	size_t startBytesOffset = offset * sizeof(PointLightData);
-	PointLightData* dataOut = &_pointLights[offset];
-
 	// Move light to the end of the vector
 	auto itOldStart = _pointLights.begin() + offset;
 	auto itNewStart = std::rotate(itOldStart, itOldStart + count, _pointLights.end());
@@ -412,7 +408,9 @@ void Scene::OnParticleSystemSelected(uint32_t PSIndex)
 	_lightOffsets[firstLightIndex] = _pointLights.size() - count;
 
 	// Update Renderer UBO
-	RC_OnLightUpdate(_pointLights.size(), startBytesOffset, 1, dataOut);
+	size_t startBytesOffset = offset * sizeof(PointLightData);
+	PointLightData* dataOut = &_pointLights[offset];
+	RC_OnLightUpdate(_pointLights.size(), startBytesOffset, _pointLights.size() - offset, dataOut);
 }
 
 // -----------------------------------------------------------------------------------
@@ -481,9 +479,10 @@ void Scene::RemoveLights(uint32_t count)
 
 void Scene::UpdateLights(const std::vector<std::shared_ptr<PointLight>>& lights)
 {
-	uint32_t startIndex = lights[0]->GetOffsetIndex();
-	size_t startBytesOffset = startIndex * sizeof(PointLightData);
-	PointLightData* dataOut = &_pointLights[startIndex];
+	uint32_t offsetIndex = lights[0]->GetOffsetIndex();
+	uint32_t offset = _lightOffsets[offsetIndex];
+	size_t startBytesOffset = offset * sizeof(PointLightData);
+	PointLightData* dataOut = &_pointLights[offset];
 
 	PointLightData* it = dataOut;
 	for (const auto& light : lights)
