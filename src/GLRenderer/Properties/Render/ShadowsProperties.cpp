@@ -21,6 +21,7 @@ namespace glrenderer {
 		_bridge->addBool(
 			"Soft Shadows",
 			_softShadows,
+			[](bool) {},
 			"Use PCSS Alogrithm for Directional Light only."
 		);
 		_bridge->addCombo(

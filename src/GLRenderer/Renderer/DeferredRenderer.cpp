@@ -107,7 +107,7 @@ void DeferredRenderer::Render(entt::registry& scene, const Entity& entitySelecte
 	// Default Framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, _rendererData.RENDER_BUFFER);
 	{
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.141f, 0.207f, 0.211f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		lightingPass();
@@ -128,14 +128,27 @@ void DeferredRenderer::geometryPass(entt::registry& scene)
 	auto group = scene.group<TransformComponent>(entt::get<MeshComponent>);
 	for (const auto entity : group)
 	{
-		auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
+		auto [transform, meshComp] = group.get<TransformComponent, MeshComponent>(entity);
 
-		mesh.mesh->getMaterial()->bindColorTexture();
+		const std::shared_ptr<Mesh>& mesh = meshComp.mesh;
+		if (!mesh->IsVisible())
+		{
+			continue;
+		}
+
+		const std::shared_ptr<Material>& material = mesh->getMaterial();
+		// TODO : forward pass for wireframe objects
+		if (material->IsWireframe())
+		{
+			continue;
+		}
+
+		material->bindColorTexture();
 
 		SendCameraUniforms(_geometryPassShader);
 		SendModelUniform(_geometryPassShader, transform.getModelMatrix());
 
-		DrawVAO(mesh.mesh->getVertexArray());
+		DrawVAO(mesh->getVertexArray());
 	}
 }
 

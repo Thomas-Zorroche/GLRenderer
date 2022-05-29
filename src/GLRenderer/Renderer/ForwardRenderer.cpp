@@ -60,9 +60,15 @@ void ForwardRenderer::Render(entt::registry& scene, const Entity& entitySelected
 	auto group = scene.group<TransformComponent>(entt::get<MeshComponent>);
 	for (const auto entity : group)
 	{
-		auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
+		auto [transform, meshComp] = group.get<TransformComponent, MeshComponent>(entity);
 
-		const std::shared_ptr<Material>& material = mesh.mesh->getMaterial();
+		const std::shared_ptr<Mesh>& mesh = meshComp.mesh;
+		if (!mesh->IsVisible())
+		{
+			continue;
+		}
+
+		const std::shared_ptr<Material>& material = mesh->getMaterial();
 		const std::shared_ptr<Shader>& shader = material->getShader();
 		material->bind();
 
@@ -78,8 +84,19 @@ void ForwardRenderer::Render(entt::registry& scene, const Entity& entitySelected
 		//	shader->SetUniformMatrix4fv("uLightSpaceMatrix", lightSpaceMatrix);
 		//}
 
-		DrawRenderPass(mesh.mesh->getVertexArray(), shader, transform.getModelMatrix(),
-			entitySelected == entity);
+		if (material->IsWireframe())
+		{
+			glStencilMask(0x00);
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			DrawVAO(mesh->getVertexArray());
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+		else
+		{
+			DrawRenderPass(mesh->getVertexArray(), shader, transform.getModelMatrix(), entitySelected == entity);
+		}
+
 	}
 
 	// Render Lines

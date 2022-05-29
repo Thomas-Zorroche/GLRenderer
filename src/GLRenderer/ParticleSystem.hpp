@@ -16,7 +16,7 @@ namespace glrenderer
 class ParticleSystem
 {
 public:
-	ParticleSystem(Scene* scene, uint32_t firstLightIndex);
+	ParticleSystem(Scene* scene, uint32_t firstLightIndex, uint32_t sceneIndex);
 
 	// TEMP
 	static int instance;
@@ -28,6 +28,8 @@ public:
 	uint32_t GetFirstLightOffsetIndex() const;
 	uint32_t GetCount() const;
 
+	Entity GetEmitter() { return _emitter; }
+
 private:
 	void UpdateParticuleSystem();
 
@@ -36,6 +38,7 @@ private:
 	void OnCountChanged(int count);
 	void OnSeedChanged(int seed);
 	void OnEmitterTransformChanged();
+	void OnShowEmitterChanged(bool showEmitter);
 
 private:
 // Particle System data
@@ -57,10 +60,11 @@ private:
 	EParticleType _particleType = EParticleType::PointLight;
 
 	int _count = 0;
+	int _lastCount = 0;
 
 	int _seed = 0;
 
-	bool _showEmitter = false;
+	bool _showEmitter = true;
 
 // End of particle system data
 
@@ -89,6 +93,8 @@ private:
 	Entity _emitter;
 
 	std::shared_ptr<Shader> _wireframeShader = std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/Wireframe.frag");
+
+	uint32_t _sceneIndex = 0;
 
 // Light data
 public:

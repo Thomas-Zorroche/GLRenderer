@@ -356,7 +356,7 @@ void Scene::AddParticuleSystem()
 	_pointLights.push_back(firstLight->GetLightData());
 	_lightOffsets.push_back(_pointLights.size() - 1);
 
-	_particleSystems.push_back(std::make_shared<ParticleSystem>(this, _lightOffsets.size() - 1));
+	_particleSystems.push_back(std::make_shared<ParticleSystem>(this, _lightOffsets.size() - 1, _particleSystems.size()));
 }
 
 const std::vector<std::shared_ptr< class ParticleSystem>>& Scene::GetParticuleSystems()
@@ -382,10 +382,23 @@ void Scene::RemoveParticuleSystemAtIndex(uint32_t index)
 
 void Scene::OnParticleSystemSelected(uint32_t PSIndex)
 {
+	if (PSIndex >= _particleSystems.size())
+	{
+		std::cout << "OnParticleSystemSelected error : out of range" << std::endl;
+		return;
+	}
 	// Retrieve particle system offset
 	uint32_t firstLightIndex = _particleSystems[PSIndex]->GetFirstLightOffsetIndex();
+	// Already last index in the list, so no need to rotate
+	if (firstLightIndex == _lightOffsets.size() - 1)
+		return;
+
 	uint32_t offset = _lightOffsets[firstLightIndex];
 	uint32_t count = _particleSystems[PSIndex]->GetCount();
+
+	// Initialize some data to update renderer UBO
+	size_t startBytesOffset = offset * sizeof(PointLightData);
+	PointLightData* dataOut = &_pointLights[offset];
 
 	// Move light to the end of the vector
 	auto itOldStart = _pointLights.begin() + offset;
@@ -397,6 +410,9 @@ void Scene::OnParticleSystemSelected(uint32_t PSIndex)
 		_lightOffsets[index] -= count;
 	}
 	_lightOffsets[firstLightIndex] = _pointLights.size() - count;
+
+	// Update Renderer UBO
+	RC_OnLightUpdate(_pointLights.size(), startBytesOffset, 1, dataOut);
 }
 
 // -----------------------------------------------------------------------------------
@@ -411,12 +427,12 @@ void Scene::AddLight(const std::shared_ptr<PointLight>& light)
 		return;
 	}
 
+	size_t sizeAtStart = _pointLights.size();
+	_pointLights.push_back(light->GetLightData());
+
 	// Add index in offset array
 	_lightOffsets.push_back(_pointLights.size() - 1);
 	light->SetOffsetIndex(_lightOffsets.size() - 1);
-
-	size_t sizeAtStart = _pointLights.size();
-	_pointLights.push_back(light->GetLightData());
 
 	size_t startBytesOffset = sizeAtStart * sizeof(PointLightData);
 	PointLightData* dataOut = &_pointLights[sizeAtStart];
@@ -455,7 +471,8 @@ void Scene::RemoveLights(uint32_t count)
 {
 	for (size_t i = 0; i < count; i++)
 	{
-		_pointLights.pop_back();
+		if (!_pointLights.empty())
+			_pointLights.pop_back();
 	}
 
 	// Update Renderer UBO

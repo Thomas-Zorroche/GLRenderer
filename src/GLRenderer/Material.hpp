@@ -32,6 +32,9 @@ namespace glrenderer {
 
 		void setBaseColorTexture(int texture, const glm::vec4& baseColorFactor = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
+		bool IsWireframe() const { return _isWireframe; }
+		void SetWireframe(bool wireframe) { _isWireframe = wireframe; }
+
 	private:
 		std::shared_ptr<Shader> _shader;
 		std::string _name;
@@ -42,5 +45,7 @@ namespace glrenderer {
 
 		int _baseColorTexture = -1;
 		glm::vec4 _baseColorFactor = glm::vec4(1.f, 1.f, 1.f, 1.f);
+
+		bool _isWireframe = false;
 	};
 }

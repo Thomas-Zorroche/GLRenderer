@@ -76,6 +76,14 @@ namespace glrenderer {
 			: line(line) {}
 	};
 
+	struct ParticleSystemComponent
+	{
+		// index in scene::particleSystems
+		uint32_t index = 0;
+
+		ParticleSystemComponent() = default;
+	};
+
 	struct CallbackComponent
 	{
 		std::function<void()> OnTransformCallback;

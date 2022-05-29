@@ -27,6 +27,9 @@ namespace glrenderer {
 		std::shared_ptr<Material>& getMaterial() { return _material; }
 		const std::shared_ptr<Material>& getMaterial() const { return _material; }
 
+		bool IsVisible() const { return _visible; }
+		void SetVisibility(bool visible) { _visible = visible; }
+
 		static std::shared_ptr<Mesh> createMesh(MeshShape mesh);
 
 	private:
@@ -35,5 +38,7 @@ namespace glrenderer {
 	private:
 		std::shared_ptr<VertexArray> _VAO = nullptr;
 		std::shared_ptr<Material> _material;
+
+		bool _visible = true;
 	};
 }

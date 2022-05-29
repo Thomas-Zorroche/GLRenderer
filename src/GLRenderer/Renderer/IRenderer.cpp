@@ -48,10 +48,10 @@ void IRenderer::DrawLine(const std::shared_ptr<VertexArray>& vertexArray, const 
 	//shader->SetUniformMatrix4fv("uProjectionMatrix", _cameraData.viewProjectionMatrix);
 	//shader->SetUniformMatrix4fv("uModelMatrix", transform);
 	//shader->SetUniform3f("uColor", selected ? glm::vec3(0.0f, 0.95f, 0.40f) : glm::vec3(0.0f, 0.0f, 0.0f));
-	//
-	//glStencilMask(0x00);
-	//vertexArray->bind();
-	//glDrawArrays(GL_LINES, 0, 2);
+	
+	glStencilMask(0x00);
+	vertexArray->bind();
+	glDrawArrays(GL_LINES, 0, 2);
 }
 
 

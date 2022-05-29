@@ -10,8 +10,9 @@ namespace glrenderer
 int ParticleSystem::instance = 0;
 
 
-ParticleSystem::ParticleSystem(Scene* scene, uint32_t firstLightIndex)
+ParticleSystem::ParticleSystem(Scene* scene, uint32_t firstLightIndex, uint32_t sceneIndex)
 {
+	_sceneIndex = sceneIndex;
 
 	std::random_device randomDevice;
 	_generator = std::mt19937(randomDevice());
@@ -26,6 +27,7 @@ ParticleSystem::ParticleSystem(Scene* scene, uint32_t firstLightIndex)
 
 	_scene = scene;
 
+	_count = _startCount;
 	_lights.reserve(_maxParticuleCount);
 	OnCountChanged(_startCount);
 	_lights[0]->SetOffsetIndex(firstLightIndex);
@@ -62,6 +64,7 @@ ParticleSystem::ParticleSystem(Scene* scene, uint32_t firstLightIndex)
 	_bridge->addBool(
 		"Show Emitter",
 		_showEmitter,
+		[this](int showEmitter) {this->OnShowEmitterChanged(showEmitter); },
 		"Show shape emitter in wireframe");
 
 	_initialize = true;
@@ -73,6 +76,11 @@ void ParticleSystem::SetLightOffsetIndex(uint32_t offsetIndex)
 	{
 		_lights[0]->SetOffsetIndex(offsetIndex);
 	}
+}
+
+void ParticleSystem::OnShowEmitterChanged(bool showEmitter)
+{
+	_emitter.getComponent<MeshComponent>().mesh->SetVisibility(_showEmitter);
 }
 
 void ParticleSystem::OnEmitterTypeChanged(unsigned int emitterTypeId)
@@ -104,10 +112,16 @@ void ParticleSystem::OnEmitterTypeChanged(unsigned int emitterTypeId)
 	auto& callbackComp = _emitter.addComponent<CallbackComponent>();
 	callbackComp.OnTransformCallback = std::bind(&ParticleSystem::OnEmitterTransformChanged, this);
 
+	// Set PS Component
+	auto& psComp = _emitter.addComponent<ParticleSystemComponent>();
+	psComp.index = _sceneIndex;
+
+
 	// Set Wireframe material
 	auto& mesh = _emitter.getComponent<MeshComponent>().mesh;
 	auto& material = mesh->getMaterial();
 	material->setShader(_wireframeShader);
+	material->SetWireframe(true);
 }
 
 void ParticleSystem::OnParticleTypeChanged(unsigned int particleTypeId)
@@ -119,21 +133,20 @@ void ParticleSystem::OnParticleTypeChanged(unsigned int particleTypeId)
 void ParticleSystem::OnCountChanged(int count)
 {
 	// Remove lights
-	if (_count > count && count > 0 && count < _maxParticuleCount)
+	if (_count < _lastCount && _count > 0 && _count < _maxParticuleCount)
 	{
-		for (size_t i = 0; i < _count - count; i++)
+		for (size_t i = 0; i < _lastCount - _count; i++)
 		{
 			_lights.pop_back();
 		}
-		_scene->RemoveLights(_count - count);
-		_count = count;
+		_scene->RemoveLights(_lastCount - _count);
 	}
 
 	// Add lights
-	else if (_count < count && count > 0 && count < _maxParticuleCount)
+	else if (_lastCount < _count < _count && _count > 0 && _count < _maxParticuleCount)
 	{
 		size_t offset = _lights.size();
-		for (size_t i = 0; i < count - _count; i++)
+		for (size_t i = 0; i < _count - _lastCount; i++)
 		{
 			auto light = std::make_shared<PointLight>();
 
@@ -152,9 +165,10 @@ void ParticleSystem::OnCountChanged(int count)
 			_lights.push_back(light);
 		}
 		auto itStart = _lights.begin() + offset;
-		_scene->AddInstancedLights(count - _count, itStart, !_initialize);
-		_count = count;
+		_scene->AddInstancedLights(_count - _lastCount, itStart, !_initialize);
 	}
+
+	_lastCount = _count;
 }
 
 void ParticleSystem::OnSeedChanged(int seed)
