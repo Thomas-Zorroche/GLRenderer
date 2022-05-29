@@ -107,7 +107,7 @@ void DeferredRenderer::Render(entt::registry& scene, const Entity& entitySelecte
 	// Default Framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, _rendererData.RENDER_BUFFER);
 	{
-		glClearColor(0.141f, 0.207f, 0.211f, 1.0f);
+		glClearColor(0.250, 0.223, 0.192, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		lightingPass();

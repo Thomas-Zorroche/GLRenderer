@@ -26,7 +26,10 @@ namespace glrenderer {
 	{
 		_shader->Bind();
 
-		bindColorTexture();
+		if (_baseColorTexture >= 0)
+		{
+			bindColorTexture();
+		}
 	}
 
 	void Material::unbind()
@@ -37,36 +40,42 @@ namespace glrenderer {
 
 	void Material::bindColorTexture() const
 	{
-		if (_baseColorTexture >= 0)
-		{
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, _baseColorTexture);
-			_shader->SetUniform4f("uBaseColorFactor", _baseColorFactor);
-		}
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _baseColorTexture);
+		_shader->SetUniform4f("uBaseColorFactor", _baseColorFactor);
 	}
 
 	void Material::updateDiffuse()
 	{
-		bind();
-		// TEMP
-		//_shader->SetUniform3f("uColor", _diffuse);
+		_shader->Bind();
+		_shader->SetUniform3f("uColor", _diffuse);
 	}
 
 	void Material::updateRoughness()
 	{
 		_shininess = math::lerp(0.0f, 900.0f, 1.0 -_roughness);
 
-		bind();
+		_shader->Bind();
 		_shader->SetUniform1f("uShininess", _shininess);
 	}
 
 	void Material::setBaseColorTexture(int texture, const glm::vec4& baseColorFactor)
 	{
-		bind();
+		_shader->Bind();
 
 		_baseColorTexture = texture;
 		_shader->SetUniform1i("uBaseColorTexture", 0);
 		_shader->SetUniform4f("uBaseColorFactor", baseColorFactor);
 	}
+
+	void Material::setDiffuse(int r, int g, int b)
+	{
+		_diffuse.r = r / 255.0f;
+		_diffuse.g = g / 255.0f;
+		_diffuse.b = b / 255.0f;
+
+		updateDiffuse();
+	}
+
 
 }

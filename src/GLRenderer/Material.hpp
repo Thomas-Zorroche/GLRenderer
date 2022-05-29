@@ -20,6 +20,7 @@ namespace glrenderer {
 		const glm::vec3& getDiffuse() const { return _diffuse; }
 		glm::vec3& getDiffuse() { return _diffuse; }
 		void updateDiffuse();
+		void setDiffuse(int r, int g, int b);
 
 		const float& getRoughness() const { return _roughness; }
 		float& getRoughness() { return _roughness; }

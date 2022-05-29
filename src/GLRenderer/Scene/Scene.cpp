@@ -100,6 +100,44 @@ Scene::~Scene()
 
 }
 
+void Scene::CreateDefaultScene()
+{
+	// Default Cube
+	{
+		auto cube = CreateBaseEntity(EBaseEntityType::Cube);
+		auto& transform = cube.getComponent<TransformComponent>();
+		transform.location.y = 1.0f;
+		auto& material = cube.getComponent<MeshComponent>().mesh->getMaterial();
+		material->setDiffuse(255, 153, 68);
+	}
+
+	// Default Plan
+	{
+		auto plan = CreateBaseEntity(EBaseEntityType::Plan);
+		auto& transform = plan.getComponent<TransformComponent>();
+		transform.scale.x *= 20;
+		transform.scale.z *= 20;
+		auto& material = plan.getComponent<MeshComponent>().mesh->getMaterial();
+		material->setDiffuse(109, 73, 66);
+	}
+
+	// Default Point Light
+	{
+		auto light = CreateBaseEntity(EBaseEntityType::PointLight);
+		auto& transform = light.getComponent<TransformComponent>();
+		transform.location.x = 4.0f;
+		transform.location.y = 4.5f;
+		transform.location.z = 5.0f;
+
+		auto& lightComp = light.getComponent<LightComponent>();
+		if (auto& pointLight = std::dynamic_pointer_cast<PointLight>(lightComp.light))
+		{
+			pointLight->UpdateLocation(transform.location);
+			UpdateLights({ pointLight });
+		}
+	}
+}
+
 //void Scene::createLights(size_t numLights)
 //{
 //	if (_pointLights.size() + numLights > _rendererMaximumLightCount)

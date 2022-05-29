@@ -30,7 +30,7 @@ void ForwardRenderer::Initialize()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// Clear Color
-	glClearColor(0.141f, 0.207f, 0.211f, 1.0f);
+	glClearColor(0.250, 0.223, 0.192, 1.0f);
 }
 
 void ForwardRenderer::Render(entt::registry& scene, const Entity& entitySelected)
@@ -125,25 +125,25 @@ void ForwardRenderer::DrawRenderPass(const std::shared_ptr<VertexArray>& vertexA
 
 	DrawVAO(vertexArray);
 
-	if (selected)
-	{
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		//glDisable(GL_DEPTH_TEST);
-	
-		// Draw selected entity with x1.1 scale
-		auto& entitySelectedShader = _flatMaterial->getShader();
-		entitySelectedShader->Bind();
-		SendCameraUniforms(entitySelectedShader);
-		SendModelUniform(entitySelectedShader, glm::scale(transform, glm::vec3(1.02f)));
-		entitySelectedShader->SetUniform3f("uColor", glm::vec3(0.0f, 0.95f, 0.40f));
-	
-		DrawVAO(vertexArray);
-	
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		//glEnable(GL_DEPTH_TEST);
-	}
+	//if (selected)
+	//{
+	//	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	//	glStencilMask(0x00);
+	//	//glDisable(GL_DEPTH_TEST);
+	//
+	//	// Draw selected entity with x1.1 scale
+	//	auto& entitySelectedShader = _flatMaterial->getShader();
+	//	entitySelectedShader->Bind();
+	//	SendCameraUniforms(entitySelectedShader);
+	//	SendModelUniform(entitySelectedShader, glm::scale(transform, glm::vec3(1.02f)));
+	//	entitySelectedShader->SetUniform3f("uColor", glm::vec3(0.0f, 0.95f, 0.40f));
+	//
+	//	DrawVAO(vertexArray);
+	//
+	//	glStencilMask(0xFF);
+	//	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+	//	//glEnable(GL_DEPTH_TEST);
+	//}
 }
 
 void ForwardRenderer::DrawDepthPass()

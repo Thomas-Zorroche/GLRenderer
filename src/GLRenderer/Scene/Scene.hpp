@@ -36,6 +36,8 @@ public:
 	Scene(const std::shared_ptr<class RendererContext>& rendererContext);
 	~Scene();
 
+	void CreateDefaultScene();
+
 	const std::shared_ptr<ImBridge::Bridge>& GetBridge() { return _bridge; }
 
 	friend class Entity;

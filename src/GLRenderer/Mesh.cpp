@@ -13,6 +13,7 @@ namespace glrenderer {
 		if (material == nullptr)
 		{
 			_material = std::make_shared<Material>(std::make_shared<Shader>("res/shaders/FlatColor.vert", "res/shaders/LightingColor.frag"));
+
 		}
 		setupMesh(vertices, indices);
 	}
